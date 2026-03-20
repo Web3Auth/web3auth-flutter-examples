@@ -1,76 +1,141 @@
-# Web3Auth Flutter Auth0 Example
+# MetaMask Embedded Wallets Flutter - Auth0 Example
 
-This example demonstrates how to integrate Web3Auth with Auth0 authentication in a Flutter application. It showcases a custom authentication setup using Auth0 as the authentication provider with Web3Auth's blockchain functionality.
+[![Web3Auth](https://img.shields.io/badge/MetaMask-Embedded_Wallets-blue)](https://docs.metamask.io/embedded-wallets/sdk/flutter/)
+[![Auth0](https://img.shields.io/badge/Auth0-Custom_Auth-EB5424?logo=auth0)](https://auth0.com)
+[![Flutter](https://img.shields.io/badge/Flutter-SDK-02569B?logo=flutter)](https://flutter.dev)
+
+This example demonstrates how to integrate MetaMask Embedded Wallets with Auth0 authentication in a Flutter application. It showcases a custom authentication setup using Auth0 as the identity provider with Web3Auth's blockchain functionality.
 
 ## 📝 Features
-- Auth0 social login integration
-- Custom authentication flow
-- Ethereum wallet creation and management
-- Basic blockchain interactions
-- Secure key management
-- Cross-platform support (iOS & Android)
+
+- **Auth0 Social Logins**: Google, Facebook, Twitter, GitHub, and more
+- **Universal Login**: Auth0's hosted login page with customization options
+- **Custom JWT Authentication**: Auth0 ID tokens used for Web3Auth login
+- **EVM Wallet**: Automatic Ethereum wallet creation linked to Auth0 identity
+- **Blockchain Interactions**: Full blockchain operations using web3dart
+- **Secure Key Management**: Non-custodial key management with Auth0 identity
+- **Cross-Platform**: Single codebase for iOS and Android
+- **Enterprise-Ready**: Auth0's enterprise features (SSO, MFA, etc.)
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Flutter 2.10.0 or higher
-- Dart 2.16.0 or higher
-- [Auth0 Account](https://auth0.com)
-- [Web3Auth Dashboard](https://dashboard.web3auth.io) account
-- Android Studio / VS Code with Flutter extension
-- For iOS development:
-  - Xcode 13+
-  - CocoaPods
-- For Android development:
-  - Android Studio
-  - JDK 11+
+
+- **Flutter**: 3.0.0 or higher
+- **Dart**: 2.18.0 or higher
+- **Auth0 Account**: [Create one here](https://auth0.com)
+- **MetaMask Embedded Wallets**: [Dashboard account](https://dashboard.web3auth.io)
+- **iOS** (for iOS development):
+  - iOS 14+, Xcode 12+, Swift 5.x, CocoaPods
+- **Android** (for Android development):
+  - API level 26+, compileSdkVersion 34, JDK 11+
 
 ### Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/Web3Auth/web3auth-mobile-examples.git
-cd web3auth-mobile-examples/flutter/flutter-auth0-example
-```
-
-2. Install dependencies:
-```bash
-flutter pub get
-```
-
-3. iOS Setup (for iOS development):
-```bash
-cd ios && pod install && cd ..
-```
-
-### Configuration
-
-1. Auth0 Setup:
-   - Create a new application in [Auth0 Dashboard](https://manage.auth0.com)
-   - Configure callback URLs:
-     ```
-     com.example.app://login-callback
-     ```
-   - Note down Domain and Client ID
-
-2. Web3Auth Setup:
-   - Get your Client ID from [Web3Auth Dashboard](https://dashboard.web3auth.io)
-   - Create a custom verifier with Auth0 configuration
-   - Update configuration in `lib/main.dart`:
-   ```dart
-   final web3auth = Web3Auth(
-     clientId: "YOUR-WEB3AUTH-CLIENT-ID",
-     network: Network.testnet,
-     customVerifier: "YOUR-VERIFIER-NAME",
-   );
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Web3Auth/web3auth-flutter-examples.git
+   cd web3auth-flutter-examples/flutter-auth0-example
    ```
 
-3. Update Auth0 credentials in `lib/config/auth0_config.dart`:
+2. **Install dependencies**:
+   ```bash
+   flutter pub get
+   ```
+
+3. **iOS Setup** (for iOS development):
+   ```bash
+   cd ios && pod install && cd ..
+   ```
+
+### Auth0 Configuration
+
+1. **Create an Auth0 Application**:
+   - Go to [Auth0 Dashboard](https://manage.auth0.com)
+   - Create a new application → Native
+   - Note your **Domain** and **Client ID**
+
+2. **Configure Allowed Callback URLs**:
+   - Add for iOS: `com.example.auth0app://YOUR_AUTH0_DOMAIN/ios/com.example.auth0app/callback`
+   - Add for Android: `com.example.auth0app://YOUR_AUTH0_DOMAIN/android/com.example.auth0app/callback`
+
+3. **Configure Allowed Logout URLs**:
+   - Add for iOS: `com.example.auth0app://YOUR_AUTH0_DOMAIN/ios/com.example.auth0app/logout`
+   - Add for Android: `com.example.auth0app://YOUR_AUTH0_DOMAIN/android/com.example.auth0app/logout`
+
+4. **Enable social connections** (optional):
+   - Go to Authentication → Social
+   - Enable and configure providers (Google, Facebook, etc.)
+
+### Web3Auth Configuration
+
+1. **Create a project** on the [Embedded Wallets Dashboard](https://dashboard.web3auth.io)
+
+2. **Choose your network**:
+   - **Sapphire Devnet**: For development/testing
+   - **Sapphire Mainnet**: For production
+
+3. **Create a Custom Authentication connection**:
+   - Go to "Auth" → "Custom Authentication"
+   - Click "Create Verifier"
+   - Configure Auth0:
+     - **Verifier Name**: Give it a unique name (e.g., `auth0-flutter-verifier`)
+     - **Login Provider**: Select "Auth0"
+     - **Auth0 Domain**: Your Auth0 domain (e.g., `your-tenant.us.auth0.com`)
+     - **Auth0 Client ID**: Your Auth0 application client ID
+     - **JWT Verifier ID**: `sub` (Auth0 user ID)
+     - **JWK Endpoint**: Auto-filled as `https://YOUR_DOMAIN/.well-known/jwks.json`
+
+4. **Configure platform settings**:
+   - **iOS**: Allowlist `{bundleId}://auth`
+   - **Android**: Allowlist your package name
+
+5. **Get your Client ID and Verifier Name** from the dashboard
+
+### Code Configuration
+
+Update the configuration in `lib/config/auth0_config.dart`:
+
 ```dart
 class Auth0Config {
-  static const String domain = "YOUR-AUTH0-DOMAIN";
-  static const String clientId = "YOUR-AUTH0-CLIENT-ID";
-  static const String redirectUri = "com.example.app://login-callback";
+  static const String domain = "your-tenant.us.auth0.com";
+  static const String clientId = "YOUR_AUTH0_CLIENT_ID";
+  
+  // Redirect URLs
+  static String getCallbackUrl(String bundleId) {
+    if (Platform.isAndroid) {
+      return "$bundleId://$domain/android/$bundleId/callback";
+    } else if (Platform.isIOS) {
+      return "$bundleId://$domain/ios/$bundleId/callback";
+    }
+    throw UnsupportedError('Unsupported platform');
+  }
+}
+```
+
+Update Web3Auth configuration in `lib/main.dart`:
+
+```dart
+import 'package:web3auth_flutter/web3auth_flutter.dart';
+
+Future<void> initWeb3Auth() async {
+  late final Uri redirectUrl;
+  
+  if (Platform.isAndroid) {
+    redirectUrl = Uri.parse('w3a://com.example.auth0app/auth');
+  } else if (Platform.isIOS) {
+    redirectUrl = Uri.parse('com.example.auth0app://auth');
+  }
+
+  await Web3AuthFlutter.init(
+    Web3AuthOptions(
+      clientId: "YOUR_WEB3AUTH_CLIENT_ID",
+      network: Network.sapphire_mainnet,
+      redirectUrl: redirectUrl,
+    )
+  );
+  
+  await Web3AuthFlutter.initialize();
 }
 ```
 
@@ -88,103 +153,229 @@ flutter build apk  # For Android
 ## 💡 Implementation Details
 
 ### Project Structure
+
 ```
 lib/
-├── main.dart              # Entry point
+├── main.dart                # Entry point & initialization
 ├── config/
-│   └── auth0_config.dart  # Auth0 configuration
+│   └── auth0_config.dart    # Auth0 configuration
 ├── services/
-│   ├── auth0_service.dart # Auth0 service
-│   ├── web3auth.dart      # Web3Auth service
-│   └── blockchain.dart    # Blockchain operations
-├── screens/
-│   ├── home.dart          # Home screen
-│   └── login.dart         # Login screen
-└── widgets/               # Reusable widgets
+│   ├── auth0_service.dart   # Auth0 authentication
+│   ├── web3auth_service.dart # Web3Auth operations
+│   └── blockchain.dart      # Blockchain operations
+└── screens/
+    ├── home.dart            # Home screen with wallet info
+    └── login.dart           # Login screen
 ```
 
-### Core Features Implementation
+### Core Implementation
 
-1. **Auth0 Configuration**
+#### 1. Initialize Auth0 and Web3Auth
+
 ```dart
+import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:web3auth_flutter/web3auth_flutter.dart';
+
 // Initialize Auth0
 final auth0 = Auth0(
   Auth0Config.domain,
   Auth0Config.clientId,
 );
+
+// Initialize Web3Auth
+Future<void> initWeb3Auth() async {
+  // ... (see Code Configuration section above)
+}
 ```
 
-2. **Web3Auth with Auth0**
-```dart
-// Initialize Web3Auth
-final web3auth = Web3Auth(
-  clientId: "YOUR-CLIENT-ID",
-  network: Network.testnet,
-  customVerifier: "YOUR-VERIFIER",
-);
+#### 2. Implement Auth0 + Web3Auth Login
 
-// Login with Auth0
+```dart
+import 'package:auth0_flutter/auth0_flutter.dart';
+
 Future<void> loginWithAuth0() async {
-  // Get Auth0 credentials
-  final credentials = await auth0.webAuthentication().login(
-    audience: 'https://your-audience/',
-    scopes: {'openid', 'profile', 'email'},
-  );
+  try {
+    // Step 1: Login with Auth0
+    final credentials = await auth0.webAuthentication().login(
+      useEphemeralSession: true, // Don't persist session in browser
+    );
+    
+    // Step 2: Get ID Token
+    final idToken = credentials.idToken;
+    
+    // Step 3: Login to Web3Auth with Auth0 JWT
+    final Web3AuthResponse response = await Web3AuthFlutter.login(
+      LoginParams(
+        loginProvider: Provider.jwt,
+        extraLoginOptions: ExtraLoginOptions(
+          id_token: idToken,
+          verifierIdField: 'sub',
+          domain: Auth0Config.domain,
+        ),
+      )
+    );
+    
+    print('Web3Auth login successful!');
+    print('User: ${response.userInfo?.email}');
+    
+  } on WebAuthenticationException catch (e) {
+    print('Auth0 error: ${e.message}');
+  } catch (e) {
+    print('Login error: $e');
+  }
+}
+```
+
+#### 3. Specify Social Connection (Optional)
+
+```dart
+Future<void> loginWithGoogle() async {
+  try {
+    // Login with specific social connection
+    final credentials = await auth0.webAuthentication().login(
+      parameters: {
+        'connection': 'google-oauth2', // Or 'facebook', 'github', etc.
+      },
+    );
+    
+    final idToken = credentials.idToken;
+    
+    await Web3AuthFlutter.login(
+      LoginParams(
+        loginProvider: Provider.jwt,
+        extraLoginOptions: ExtraLoginOptions(
+          id_token: idToken,
+          verifierIdField: 'sub',
+        ),
+      )
+    );
+  } catch (e) {
+    print('Login error: $e');
+  }
+}
+```
+
+#### 4. Logout
+
+```dart
+Future<void> logout() async {
+  // Logout from Web3Auth
+  await Web3AuthFlutter.logout();
   
-  // Get ID token
-  final idToken = credentials.idToken;
+  // Logout from Auth0
+  await auth0.webAuthentication().logout();
+}
+```
+
+#### 5. Get Blockchain Credentials
+
+```dart
+import 'package:web3dart/web3dart.dart';
+
+Future<void> getWalletInfo() async {
+  // Get private key from Web3Auth
+  final privateKey = await Web3AuthFlutter.getPrivKey();
   
-  // Connect to Web3Auth
-  await web3auth.login(
-    loginProvider: Provider.jwt,
-    extraLoginOptions: ExtraLoginOptions(
-      id_token: idToken,
-      verifier: "YOUR-VERIFIER",
-      domain: "auth0.com",
-    ),
-  );
+  // Create credentials
+  final credentials = EthPrivateKey.fromHex(privateKey);
+  
+  // Get address
+  final address = credentials.address;
+  print('Wallet address: ${address.hex}');
+  
+  // Get balance
+  final client = Web3Client('YOUR_RPC_URL', Client());
+  final balance = await client.getBalance(address);
+  print('Balance: ${balance.getValueInUnit(EtherUnit.ether)} ETH');
 }
 ```
 
 ## 🔒 Security Considerations
 
-- Secure storage of Auth0 credentials
-- JWT token handling
-- Private key management
-- Session management
-- OAuth 2.0 best practices
+- **JWT Token Security**: Auth0 ID tokens are short-lived and securely validated
+- **Non-Custodial**: Private keys derived from Auth0 identity using Shamir Secret Sharing
+- **OAuth 2.0 / OIDC**: Industry-standard authentication protocols
+- **Token Validation**: Web3Auth validates Auth0 JWT tokens using JWKS endpoint
+- **Network Consistency**: Never change Client ID or verifier configuration in production
+- **Same User Identity**: Same Auth0 user always gets the same wallet address
+- **Enterprise Security**: Auth0 provides MFA, anomaly detection, breached password detection
 
 ## 🛠️ Troubleshooting
 
-### Common Issues
+### Auth0 Configuration Issues
 
-1. **Auth0 Configuration**
-   - Verify callback URLs
-   - Check Auth0 application settings
-   - Validate domain and client ID
+**Problem**: Auth0 login fails or doesn't redirect back
 
-2. **Web3Auth Integration**
-   - Verify custom verifier setup
-   - Check JWT token handling
-   - Debug authentication flow
+**Solutions**:
+- Verify callback URLs are correctly configured in Auth0 dashboard
+- Check that URL schemes match in both Auth0 and your app
+- For iOS: Verify URL scheme in `Info.plist`
+- For Android: Verify intent filter in `AndroidManifest.xml`
 
-3. **Platform-Specific Issues**
-   - iOS: URL scheme configuration
-   - Android: Intent filters setup
+**Problem**: "Invalid state" error
+
+**Solutions**:
+- This usually means callback URL mismatch
+- Verify the redirect URL format exactly matches Auth0 configuration
+- Check for typos in domain or bundle ID
+
+### Web3Auth Integration Issues
+
+**Problem**: JWT login fails with "Invalid token" error
+
+**Solutions**:
+- Verify Custom Verifier configuration in Web3Auth dashboard
+- Check that Auth0 domain and client ID match exactly
+- Ensure JWKS endpoint is accessible
+- Verify `verifierIdField` is set to `sub`
+- Check that ID token is valid and not expired
+
+**Problem**: Different wallet address on each login
+
+**Solutions**:
+- Ensure you're using the same verifier name each time
+- Verify `verifierIdField` is consistent (`sub`)
+- Check that Client ID hasn't changed
+- Ensure network (devnet/mainnet) is consistent
+
+### Platform-Specific Issues
+
+**iOS**:
+- Add URL schemes to `Info.plist` for both Auth0 and Web3Auth
+- Allowlist `{bundleId}://auth` in Web3Auth dashboard
+- Configure Auth0 callback: `{bundleId}://YOUR_DOMAIN/ios/{bundleId}/callback`
+
+**Android**:
+- Configure intent filters in `AndroidManifest.xml` for both Auth0 and Web3Auth
+- Verify `compileSdkVersion 34`
+- Check package name allowlist in Web3Auth dashboard
 
 ## 📚 Resources
 
-- [Web3Auth Documentation](https://web3auth.io/docs)
-- [Flutter SDK Reference](https://web3auth.io/docs/sdk/pnp/flutter)
-- [Auth0 Flutter Integration](https://auth0.com/docs/quickstart/native/flutter)
-- [Custom Authentication Setup](https://web3auth.io/docs/guides/custom-authentication)
-- [Auth0 Setup Guide](https://web3auth.io/docs/guides/auth0)
+### Documentation
+- [MetaMask Embedded Wallets Docs](https://docs.metamask.io/embedded-wallets/)
+- [Flutter SDK Reference](https://docs.metamask.io/embedded-wallets/sdk/flutter/)
+- [Custom Authentication Guide](https://docs.metamask.io/embedded-wallets/sdk/flutter/advanced/custom-authentication/)
+- [Auth0 Flutter SDK](https://auth0.com/docs/quickstart/native/flutter)
+- [Auth0 Documentation](https://auth0.com/docs)
+
+### SDK & Packages
+- [web3auth_flutter on pub.dev](https://pub.dev/packages/web3auth_flutter)
+- [auth0_flutter on pub.dev](https://pub.dev/packages/auth0_flutter)
+- [GitHub Repository](https://github.com/Web3Auth/web3auth-flutter-sdk)
+
+### Community & Support
+- [MetaMask Builder Hub](https://builder.metamask.io/c/embedded-wallets/5)
+- [Auth0 Community](https://community.auth0.com)
+- [Discord Community](https://discord.gg/web3auth)
+- [GitHub Issues](https://github.com/Web3Auth/web3auth-flutter-examples/issues)
 
 ## 🤝 Support
 
+Need help? Reach out through:
+- [Builder Hub Community](https://builder.metamask.io/c/embedded-wallets/5)
+- [GitHub Issues](https://github.com/Web3Auth/web3auth-flutter-examples/issues)
 - [Discord](https://discord.gg/web3auth)
-- [GitHub Issues](https://github.com/Web3Auth/web3auth-mobile-examples/issues)
-- [Web3Auth Support](https://web3auth.io/docs/troubleshooting/support)
 
 ## 📄 License
 
