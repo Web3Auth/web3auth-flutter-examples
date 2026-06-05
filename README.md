@@ -31,16 +31,6 @@ These examples use the latest MetaMask Embedded Wallets SDK (`web3auth_flutter ^
 | [**flutter-solana-example**](./flutter-solana-example) | Solana blockchain integration | Solana wallet, SPL tokens |
 | [**flutter-playground**](./flutter-playground) | Advanced features showcase | MFA, whitelabel, wallet services |
 
-### ⚠️ Deprecated Examples (SFA SDK)
-
-The following examples use the Single Factor Auth (SFA) SDK which is **deprecated**. These will be updated to use the latest Embedded Wallets SDK:
-
-- `sfa_flutter_quick_start` - Being migrated to PnP SDK
-- `sfa_flutter_aggregate_example` - Being migrated to PnP SDK
-- `sfa_flutter_solana` - Being migrated to PnP SDK
-
-**Note**: If you're starting a new project, please use the Plug and Play examples above.
-
 ## 🚀 Quick Start
 
 ### Prerequisites
