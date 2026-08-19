@@ -17,6 +17,10 @@ This example demonstrates how to integrate MetaMask Embedded Wallets with Solana
 - **Cross-Platform**: Single codebase for iOS and Android
 - **Devnet & Mainnet**: Easily switch between Solana networks
 
+## What's new in v7
+
+This example uses `web3auth_flutter ^7.0.0` with explicit Solana chain config in `Web3AuthOptions` and `getEd25519PrivateKey()`. See the [root README](../README.md#whats-new-in-v7) for the full rename table.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -71,18 +75,18 @@ import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'dart:io';
 
 Future<void> initWeb3Auth() async {
-  late final Uri redirectUrl;
+  String redirectUrl;
   
   if (Platform.isAndroid) {
-    redirectUrl = Uri.parse('w3a://com.example.solanaapp/auth');
+    redirectUrl = 'w3a://com.example.solanaapp/auth';
   } else if (Platform.isIOS) {
-    redirectUrl = Uri.parse('com.example.solanaapp://auth');
+    redirectUrl = 'com.example.solanaapp://auth';
   }
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
       clientId: "YOUR_WEB3AUTH_CLIENT_ID",
-      network: Network.sapphire_mainnet, // or Network.sapphire_devnet
+      web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet, // or Web3AuthNetwork.sapphire_devnet
       redirectUrl: redirectUrl,
     )
   );
@@ -157,9 +161,9 @@ Future<void> initWeb3Auth() async {
 // Login with Google
 Future<void> login() async {
   try {
-    final Web3AuthResponse response = await Web3AuthFlutter.login(
+    final Web3AuthResponse response = await Web3AuthFlutter.connectTo(
       LoginParams(
-        loginProvider: Provider.google,
+        authConnection: AuthConnection.google,
         mfaLevel: MFALevel.NONE,
       )
     );
@@ -179,9 +183,9 @@ Future<void> logout() async {
 #### 3. Get Solana Private Key (Ed25519)
 
 ```dart
-// IMPORTANT: For Solana, use getED25519PrivKey(), not getPrivKey()
+// IMPORTANT: For Solana, use getEd25519PrivateKey(), not getPrivateKey()
 Future<String> getSolanaPrivateKey() async {
-  final privateKeyHex = await Web3AuthFlutter.getED25519PrivKey();
+  final privateKeyHex = await Web3AuthFlutter.getEd25519PrivateKey();
   return privateKeyHex;
 }
 ```
@@ -194,7 +198,7 @@ import 'dart:typed_data';
 
 Future<Ed25519HDKeyPair> getSolanaKeyPair() async {
   // Get Ed25519 private key from Web3Auth
-  final privateKeyHex = await Web3AuthFlutter.getED25519PrivKey();
+  final privateKeyHex = await Web3AuthFlutter.getEd25519PrivateKey();
   
   // Convert hex to bytes
   final privateKeyBytes = Uint8List.fromList(
@@ -377,7 +381,7 @@ Future<List<String>> getNFTs() async {
 
 ## 🔒 Security Considerations
 
-- **Ed25519 Keys**: Solana uses Ed25519 curve, not secp256k1 - use `getED25519PrivKey()`
+- **Ed25519 Keys**: Solana uses Ed25519 curve, not secp256k1 - use `getEd25519PrivateKey()`
 - **Non-Custodial**: Private keys managed using Shamir Secret Sharing
 - **Network Consistency**: Never change Client ID or Sapphire network in production
 - **Devnet vs Mainnet**: Always test on devnet before deploying to mainnet
@@ -391,7 +395,7 @@ Future<List<String>> getNFTs() async {
 **Problem**: Different wallet address than expected
 
 **Solution**:
-- Ensure you're using `getED25519PrivKey()` not `getPrivKey()`
+- Ensure you're using `getEd25519PrivateKey()` not `getPrivateKey()`
 - Verify you're using the same Client ID and network
 
 **Problem**: Airdrop fails

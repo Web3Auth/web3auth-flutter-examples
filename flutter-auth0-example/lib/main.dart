@@ -56,27 +56,28 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final themeMap = HashMap<String, String>();
     themeMap['primary'] = "#eb5424";
 
-    Uri redirectUrl;
+    String redirectUrl;
     if (Platform.isAndroid) {
-      redirectUrl = Uri.parse('w3a://com.example.w3aflutter');
+      redirectUrl = 'w3a://com.example.w3aflutter';
     } else if (Platform.isIOS) {
-      redirectUrl = Uri.parse('com.example.w3aflutter://openlogin');
+      redirectUrl = 'com.example.w3aflutter://openlogin';
     } else {
       throw UnKnownException('Unknown platform');
     }
 
-    final loginConfig = HashMap<String, LoginConfigItem>();
-    loginConfig['jwt'] = LoginConfigItem(
-      verifier: "w3a-auth0-demo", // get it from web3auth dashboard
-      typeOfLogin: TypeOfLogin.jwt,
-      clientId: "hUVVf4SEsZT7syOiL0gLU9hFEtm2gQ6O", // auth0 client id
-    );
+    final authConnectionConfig = [
+      AuthConnectionConfig(
+        authConnection: AuthConnection.custom,
+        authConnectionId: "w3a-auth0-demo",
+        clientId: "hUVVf4SEsZT7syOiL0gLU9hFEtm2gQ6O",
+      ),
+    ];
 
     await Web3AuthFlutter.init(
       Web3AuthOptions(
         clientId:
             'BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ',
-        network: Network.sapphire_mainnet,
+        web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
         redirectUrl: redirectUrl,
         whiteLabel: WhiteLabelData(
           appName: "Web3Auth Flutter App",
@@ -90,7 +91,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           useLogoLoader: true,
           theme: themeMap,
         ),
-        loginConfig: loginConfig,
+        authConnectionConfig: authConnectionConfig,
         // 259200 allows user to stay authenticated for 3 days with Web3Auth.
         // Default is 86400, which is 1 day.
         sessionTime: 259200,
@@ -103,7 +104,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       log(e.toString());
     }
 
-    final String res = await Web3AuthFlutter.getPrivKey();
+    final String res = await Web3AuthFlutter.getPrivateKey();
     log(res);
     if (res.isNotEmpty) {
       setState(() {
@@ -238,7 +239,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       try {
         final Web3AuthResponse response = await method();
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('privateKey', response.privKey.toString());
+        await prefs.setString(
+            'privateKey', response.privateKey?.toString() ?? '');
         setState(() {
           _result = response.toString();
           logoutVisible = true;
@@ -268,12 +270,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<Web3AuthResponse> _withAuth0() {
-    return Web3AuthFlutter.login(
+    return Web3AuthFlutter.connectTo(
       LoginParams(
-        loginProvider: Provider.jwt,
+        authConnection: AuthConnection.custom,
+        authConnectionId: "w3a-auth0-demo",
         extraLoginOptions: ExtraLoginOptions(
           domain: 'https://web3auth.au.auth0.com',
-          verifierIdField: 'sub',
+          userIdField: 'sub',
         ),
       ),
     );

@@ -26,7 +26,7 @@ class ChainConfigRepositoryImp implements ChainConfigRepository {
     final chainProvider = chainConfig.prepareChainProvider();
 
     if (chainConfig.isEVMChain) {
-      final privateKey = await Web3AuthFlutter.getPrivKey();
+      final privateKey = await Web3AuthFlutter.getPrivateKey();
       final ethereumKeyPair = EthPrivateKey.fromHex(privateKey);
       final publicAddress = ethereumKeyPair.address.hex;
       final balance = await chainProvider.getBalance(publicAddress);
@@ -36,7 +36,7 @@ class ChainConfigRepositoryImp implements ChainConfigRepository {
         ethereumKeyPair: ethereumKeyPair,
       );
     } else {
-      final privateKey = await Web3AuthFlutter.getEd25519PrivKey();
+      final privateKey = await Web3AuthFlutter.getEd25519PrivateKey();
       final solanaKeyPair = await Ed25519HDKeyPair.fromPrivateKeyBytes(
         privateKey: privateKey.hexToBytes.take(32).toList(),
       );

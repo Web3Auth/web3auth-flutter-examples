@@ -12,24 +12,34 @@ import 'package:web3auth_flutter/web3auth_flutter.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   ServiceLocator.init();
-  final Uri redirectUrl;
+  final String redirectUrl;
   if (Platform.isAndroid) {
-    redirectUrl =
-        Uri.parse('w3aexample://com.example.flutter_solana_example');
+    redirectUrl = 'w3aexample://com.example.flutter_solana_example';
   } else {
-    redirectUrl = Uri.parse('com.web3auth.fluttersolanasample://auth');
+    redirectUrl = 'com.web3auth.fluttersolanasample://auth';
   }
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
       clientId:
           "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ",
-      network: Network.sapphire_mainnet,
+      web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
       redirectUrl: redirectUrl,
       whiteLabel: WhiteLabelData(
         appName: "Solana Web3Auth Flutter",
         mode: ThemeModes.dark,
       ),
+      chains: [
+        Chains(
+          chainNamespace: ChainNamespace.solana,
+          chainId: "0x3",
+          rpcTarget: "https://api.devnet.solana.com",
+          displayName: "Solana Devnet",
+          ticker: "SOL",
+          blockExplorerUrl: "https://explorer.solana.com/?cluster=devnet",
+        ),
+      ],
+      defaultChainId: "0x3",
       sessionTime: 40,
     ),
   );
@@ -55,7 +65,7 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
-    privateKeyFuture = Web3AuthFlutter.getEd25519PrivKey();
+    privateKeyFuture = Web3AuthFlutter.getEd25519PrivateKey();
   }
 
   @override

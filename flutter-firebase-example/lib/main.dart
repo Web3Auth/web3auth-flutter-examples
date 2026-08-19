@@ -65,28 +65,29 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final themeMap = HashMap<String, String>();
     themeMap['primary'] = "#F5820D";
 
-    Uri redirectUrl;
+    String redirectUrl;
     if (Platform.isAndroid) {
-      redirectUrl = Uri.parse('w3a://com.example.w3aflutter');
+      redirectUrl = 'w3a://com.example.w3aflutter';
     } else if (Platform.isIOS) {
-      redirectUrl = Uri.parse('com.example.w3aflutter://openlogin');
+      redirectUrl = 'com.example.w3aflutter://openlogin';
     } else {
       throw UnKnownException('Unknown platform');
     }
 
-    final loginConfig = HashMap<String, LoginConfigItem>();
-    loginConfig['jwt'] = LoginConfigItem(
-        verifier: "w3a-firebase-demo", // get it from web3auth dashboard
-        typeOfLogin: TypeOfLogin.jwt,
+    final authConnectionConfig = [
+      AuthConnectionConfig(
+        authConnection: AuthConnection.custom,
+        authConnectionId: "w3a-firebase-demo",
         clientId:
-            "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ" // web3auth's plug and play client id
-        );
+            "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ",
+      ),
+    ];
 
     await Web3AuthFlutter.init(
       Web3AuthOptions(
         clientId:
             'BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ',
-        network: Network.sapphire_mainnet,
+        web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
         redirectUrl: redirectUrl,
         whiteLabel: WhiteLabelData(
           appName: "Web3Auth Flutter App",
@@ -100,7 +101,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           useLogoLoader: true,
           theme: themeMap,
         ),
-        loginConfig: loginConfig,
+        authConnectionConfig: authConnectionConfig,
+        chains: [
+          Chains(
+            chainId: "0x1",
+            rpcTarget: rpcUrl,
+            displayName: "Ethereum Mainnet",
+            ticker: "ETH",
+          ),
+        ],
+        defaultChainId: "0x1",
         // 259200 allows user to stay authenticated for 3 days with Web3Auth.
         // Default is 86400, which is 1 day.
         sessionTime: 259200,
@@ -113,7 +123,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       log(e.toString());
     }
 
-    final String res = await Web3AuthFlutter.getPrivKey();
+    final String res = await Web3AuthFlutter.getPrivateKey();
     log(res);
     if (res.isNotEmpty) {
       setState(() {
@@ -181,7 +191,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                           foregroundColor: Colors.white,
                         ),
                         onPressed: _login(_withJWT),
-                        child: const Text('Login with JWT via Firebase'),
+                        child: const Text('Login with JWT via Firebase (PnP)'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _login(_withSFA),
+                        child: const Text(
+                          'SFA Sign-In (different wallet address)',
+                        ),
                       ),
                     ],
                   ),
@@ -237,6 +253,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                           child: const Text('Enable MFA'),
                         ),
                         ElevatedButton(
+                          onPressed: _manageMFA,
+                          child: const Text('Manage MFA'),
+                        ),
+                        ElevatedButton(
                           onPressed: _transactionConfirmationUI,
                           child: const Text('Transaction Confirmation UI'),
                         ),
@@ -261,7 +281,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       try {
         final Web3AuthResponse response = await method();
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('privateKey', response.privKey.toString());
+        await prefs.setString(
+            'privateKey', response.privateKey?.toString() ?? '');
         setState(() {
           _result = response.toString();
           logoutVisible = true;
@@ -282,6 +303,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           logoutVisible = false;
         });
         await Web3AuthFlutter.logout();
+        await FirebaseAuth.instance.signOut();
       } on UserCancelledException {
         log("User cancelled.");
       } on UnKnownException {
@@ -297,7 +319,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         throw Exception('No user found');
       }
       loginParams = LoginParams(
-        loginProvider: Provider.jwt,
+        authConnection: AuthConnection.custom,
+        authConnectionId: "w3a-firebase-demo",
         extraLoginOptions: ExtraLoginOptions(
           id_token: idToken,
           domain: 'firebase',
@@ -309,9 +332,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _manageMFA() async {
+    try {
+      await Web3AuthFlutter.manageMFA();
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
   Future<void> _transactionConfirmationUI() async {
     final result = await Web3AuthFlutter.request(
-      ChainConfig(chainId: "0x1", rpcTarget: rpcUrl),
       "personal_sign",
       [
         "Hello, World!",
@@ -323,39 +353,46 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> _launchWalletUI() async {
-    Web3AuthFlutter.launchWalletServices(ChainConfig(
-      chainId: '1',
-      rpcTarget: rpcUrl,
-    ));
+    await Web3AuthFlutter.showWalletUI();
+  }
 
-    return;
+  Future<String> _getFirebaseIdToken() async {
+    try {
+      final credential = await FirebaseAuth.instance.signInAnonymously();
+      return await credential.user?.getIdToken(true) ?? '';
+    } on FirebaseAuthException catch (e) {
+      log('Firebase anonymous sign-in failed: ${e.code} ${e.message}');
+      return '';
+    }
   }
 
   Future<Web3AuthResponse> _withJWT() async {
-    String idToken = "";
-    try {
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: 'flutter@pnp.com',
-        password: 'flutter',
-      );
-      idToken = await credential.user?.getIdToken(true) ?? '';
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        log('No user found for that email.');
-      } else if (e.code == 'wrong-password') {
-        log('Wrong password provided for that user.');
-      }
-    }
+    final idToken = await _getFirebaseIdToken();
 
     loginParams = LoginParams(
-      loginProvider: Provider.jwt,
+      authConnection: AuthConnection.custom,
+      authConnectionId: "w3a-firebase-demo",
       extraLoginOptions: ExtraLoginOptions(
         id_token: idToken,
         domain: 'firebase',
       ),
     );
 
-    return Web3AuthFlutter.login(loginParams!);
+    return Web3AuthFlutter.connectTo(loginParams!);
+  }
+
+  /// SFA sign-in passes idToken directly on LoginParams (not extraLoginOptions).
+  /// This uses a different key derivation path and produces a different address.
+  Future<Web3AuthResponse> _withSFA() async {
+    final idToken = await _getFirebaseIdToken();
+
+    return Web3AuthFlutter.connectTo(
+      LoginParams(
+        authConnection: AuthConnection.custom,
+        authConnectionId: "w3a-firebase-demo",
+        idToken: idToken,
+      ),
+    );
   }
 
   Future<String> _getAddress() async {
@@ -408,7 +445,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             5000000,
           ), // 0.005 ETH
         ),
-        chainId: 11155111,
+        chainId: 1,
       );
       log(receipt);
       setState(() {

@@ -101,12 +101,9 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         return;
       }
 
-      // It can be used to set the OAuth login options for corresponding
-      // loginProvider. For instance, you'll need to pass user's email address as
-      // login_hint when the Provider is email_passwordless.
-      await Web3AuthFlutter.login(
+      await Web3AuthFlutter.connectTo(
         LoginParams(
-          loginProvider: Provider.email_passwordless,
+          authConnection: AuthConnection.email_passwordless,
           mfaLevel: MFALevel.DEFAULT,
           extraLoginOptions: ExtraLoginOptions(
             login_hint: emailController.text,

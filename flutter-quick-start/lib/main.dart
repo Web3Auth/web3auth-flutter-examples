@@ -57,14 +57,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    Uri redirectUrl;
+    String redirectUrl;
     // IMP START - Get your Web3Auth Client ID from Dashboard
     String clientId =
         'BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ';
     if (Platform.isAndroid) {
-      redirectUrl = Uri.parse('w3a://com.example.w3aflutter');
+      redirectUrl = 'w3a://com.example.w3aflutter';
     } else if (Platform.isIOS) {
-      redirectUrl = Uri.parse('com.example.w3aflutter://auth');
+      redirectUrl = 'com.example.w3aflutter://auth';
       // IMP END - Get your Web3Auth Client ID from Dashboard
     } else {
       throw UnKnownException('Unknown platform');
@@ -73,9 +73,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // IMP START - Initialize Web3Auth
     await Web3AuthFlutter.init(Web3AuthOptions(
       clientId: clientId,
-      network: Network.sapphire_mainnet,
+      web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
       redirectUrl: redirectUrl,
-      buildEnv: BuildEnv.production,
+      authBuildEnv: BuildEnv.production,
       // 259200 allows user to stay authenticated for 3 days with Web3Auth.
       // Default is 86400, which is 1 day.
       sessionTime: 259200,
@@ -88,7 +88,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
     // IMP END - Initialize Web3Auth
 
-    final String res = await Web3AuthFlutter.getPrivKey();
+    final String res = await Web3AuthFlutter.getPrivateKey();
     log(res);
     if (res.isNotEmpty) {
       setState(() {
@@ -162,6 +162,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                       ),
                       child: const Text('Login with Email Passwordless'),
                     ),
+                    ElevatedButton(
+                      onPressed: _login(_withGoogle),
+                      child: const Text('Login with Google'),
+                    ),
                   ],
                 ),
               ),
@@ -229,7 +233,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       try {
         final Web3AuthResponse response = await method();
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('privateKey', response.privKey.toString());
+        await prefs.setString(
+            'privateKey', response.privateKey?.toString() ?? '');
         setState(() {
           _result = response.toString();
           logoutVisible = true;
@@ -260,29 +265,37 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     };
   }
 
+  Future<Web3AuthResponse> _withGoogle() {
+    // IMP START - Login
+    return Web3AuthFlutter.connectTo(
+      LoginParams(authConnection: AuthConnection.google),
+    );
+    // IMP END - Login
+  }
+
   Future<Web3AuthResponse> _withEmailPasswordless(String userEmail) async {
     try {
       log(userEmail);
       // IMP START - Login
-      final response = Web3AuthFlutter.login(LoginParams(
-        loginProvider: Provider.email_passwordless,
-        extraLoginOptions: ExtraLoginOptions(login_hint: userEmail),
-      ));
+      final response = await Web3AuthFlutter.connectTo(
+        LoginParams(
+          authConnection: AuthConnection.email_passwordless,
+          extraLoginOptions: ExtraLoginOptions(login_hint: userEmail),
+        ),
+      );
       log(response.toString());
       return response;
       // IMP END - Login
     } catch (e) {
       log("Error during email/passwordless login: $e");
-      // Handle the error as needed
-      // You might want to show a user-friendly message or log the error
       return Future.error("Login failed");
     }
   }
 
-  Future<TorusUserInfo> _getUserInfo() async {
+  Future<UserInfo> _getUserInfo() async {
     try {
       // IMP START - Get User Info
-      TorusUserInfo userInfo = await Web3AuthFlutter.getUserInfo();
+      final UserInfo userInfo = await Web3AuthFlutter.getUserInfo();
       // IMP END - Get User Info
       log(userInfo.toString());
       setState(() {
@@ -290,10 +303,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       });
       return userInfo;
     } catch (e) {
-      log("Error during email/passwordless login: $e");
-      // Handle the error as needed
-      // You might want to show a user-friendly message or log the error
-      return Future.error("Login failed");
+      log("Error getting user info: $e");
+      return Future.error("Failed to get user info");
     }
   }
 

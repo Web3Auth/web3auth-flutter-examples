@@ -56,35 +56,36 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final themeMap = HashMap<String, String>();
     themeMap['primary'] = "#eb5424";
 
-    Uri redirectUrl;
+    String redirectUrl;
     if (Platform.isAndroid) {
-      redirectUrl = Uri.parse('w3a://com.example.w3aflutter');
+      redirectUrl = 'w3a://com.example.w3aflutter';
     } else if (Platform.isIOS) {
-      redirectUrl = Uri.parse('com.example.w3aflutter://openlogin');
+      redirectUrl = 'com.example.w3aflutter://openlogin';
     } else {
       throw UnKnownException('Unknown platform');
     }
 
-    final loginConfig = HashMap<String, LoginConfigItem>();
-    loginConfig['google'] = LoginConfigItem(
-      verifier: "aggregate-sapphire",
-      verifierSubIdentifier: "w3a-google",
-      typeOfLogin: TypeOfLogin.google,
-      clientId:
-          "519228911939-cri01h55lsjbsia1k7ll6qpalrus75ps.apps.googleusercontent.com", // auth0 client id
-    );
-    loginConfig['jwt'] = LoginConfigItem(
-      verifier: "aggregate-sapphire",
-      verifierSubIdentifier: "w3a-a0-github",
-      typeOfLogin: TypeOfLogin.jwt,
-      clientId: "hiLqaop0amgzCC0AXo4w0rrG9abuJTdu", // auth0 client id
-    );
+    final authConnectionConfig = [
+      AuthConnectionConfig(
+        authConnection: AuthConnection.google,
+        authConnectionId: "w3a-google",
+        groupedAuthConnectionId: "aggregate-sapphire",
+        clientId:
+            "519228911939-cri01h55lsjbsia1k7ll6qpalrus75ps.apps.googleusercontent.com",
+      ),
+      AuthConnectionConfig(
+        authConnection: AuthConnection.custom,
+        authConnectionId: "w3a-a0-github",
+        groupedAuthConnectionId: "aggregate-sapphire",
+        clientId: "hiLqaop0amgzCC0AXo4w0rrG9abuJTdu",
+      ),
+    ];
 
     await Web3AuthFlutter.init(
       Web3AuthOptions(
         clientId:
             'BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ',
-        network: Network.sapphire_mainnet,
+        web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
         redirectUrl: redirectUrl,
         whiteLabel: WhiteLabelData(
           appName: "Web3Auth Flutter App",
@@ -98,7 +99,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           useLogoLoader: true,
           theme: themeMap,
         ),
-        loginConfig: loginConfig,
+        authConnectionConfig: authConnectionConfig,
         // 259200 allows user to stay authenticated for 3 days with Web3Auth.
         // Default is 86400, which is 1 day.
         sessionTime: 259200,
@@ -111,7 +112,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       log(e.toString());
     }
 
-    final String res = await Web3AuthFlutter.getPrivKey();
+    final String res = await Web3AuthFlutter.getPrivateKey();
     log(res);
     if (res.isNotEmpty) {
       setState(() {
@@ -254,7 +255,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       try {
         final Web3AuthResponse response = await method();
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('privateKey', response.privKey.toString());
+        await prefs.setString(
+            'privateKey', response.privateKey?.toString() ?? '');
         setState(() {
           _result = response.toString();
           logoutVisible = true;
@@ -284,18 +286,26 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<Web3AuthResponse> _withGoogle() {
-    return Web3AuthFlutter.login(LoginParams(loginProvider: Provider.google));
+    return Web3AuthFlutter.connectTo(
+      LoginParams(
+        authConnection: AuthConnection.google,
+        authConnectionId: "w3a-google",
+        groupedAuthConnectionId: "aggregate-sapphire",
+      ),
+    );
   }
 
   Future<Web3AuthResponse> _withGitHub() {
-    return Web3AuthFlutter.login(
+    return Web3AuthFlutter.connectTo(
       LoginParams(
-        loginProvider: Provider.jwt,
+        authConnection: AuthConnection.custom,
+        authConnectionId: "w3a-a0-github",
+        groupedAuthConnectionId: "aggregate-sapphire",
         extraLoginOptions: ExtraLoginOptions(
           domain: 'https://web3auth.au.auth0.com',
-          verifierIdField: 'email',
+          userIdField: 'email',
           connection: 'github',
-          isVerifierIdCaseSensitive: false,
+          isUserIdCaseSensitive: false,
         ),
       ),
     );

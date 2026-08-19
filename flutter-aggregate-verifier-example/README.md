@@ -15,6 +15,10 @@ This example demonstrates how to use **Grouped Connections** (formerly Aggregate
 - **Secure Key Management**: Non-custodial key management with consistent identity
 - **Cross-Platform**: Single codebase for iOS and Android
 
+## What's new in v7
+
+This example uses `web3auth_flutter ^7.0.0` with grouped connections (`authConnectionId` + `groupedAuthConnectionId`). See the [root README](../README.md#whats-new-in-v7) for the full rename table.
+
 ## 🔑 What are Grouped Connections?
 
 Grouped Connections link multiple authentication methods together so users get the **same wallet address** regardless of how they log in:
@@ -114,18 +118,18 @@ import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'dart:io';
 
 Future<void> initWeb3Auth() async {
-  late final Uri redirectUrl;
+  String redirectUrl;
   
   if (Platform.isAndroid) {
-    redirectUrl = Uri.parse('w3a://com.example.aggregateapp/auth');
+    redirectUrl = 'w3a://com.example.aggregateapp/auth';
   } else if (Platform.isIOS) {
-    redirectUrl = Uri.parse('com.example.aggregateapp://auth');
+    redirectUrl = 'com.example.aggregateapp://auth';
   }
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
       clientId: "YOUR_WEB3AUTH_CLIENT_ID",
-      network: Network.sapphire_mainnet,
+      web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
       redirectUrl: redirectUrl,
     )
   );
@@ -167,9 +171,9 @@ lib/
 ```dart
 Future<void> loginWithGoogle() async {
   try {
-    final Web3AuthResponse response = await Web3AuthFlutter.login(
+    final Web3AuthResponse response = await Web3AuthFlutter.connectTo(
       LoginParams(
-        loginProvider: Provider.google,
+        authConnection: AuthConnection.google,
         mfaLevel: MFALevel.NONE,
       )
     );
@@ -187,9 +191,9 @@ Future<void> loginWithGoogle() async {
 ```dart
 Future<void> loginWithEmailPasswordless(String email) async {
   try {
-    final Web3AuthResponse response = await Web3AuthFlutter.login(
+    final Web3AuthResponse response = await Web3AuthFlutter.connectTo(
       LoginParams(
-        loginProvider: Provider.email_passwordless,
+        authConnection: AuthConnection.email_passwordless,
         extraLoginOptions: ExtraLoginOptions(
           login_hint: email, // User's email address
         ),
@@ -220,12 +224,12 @@ Future<void> loginWithAuth0() async {
     final idToken = credentials.idToken;
     
     // Step 3: Login to Web3Auth with JWT
-    final Web3AuthResponse response = await Web3AuthFlutter.login(
+    final Web3AuthResponse response = await Web3AuthFlutter.connectTo(
       LoginParams(
-        loginProvider: Provider.jwt,
+        authConnection: AuthConnection.custom,
         extraLoginOptions: ExtraLoginOptions(
           id_token: idToken,
-          verifierIdField: 'email', // Must match grouped connection config
+          userIdField: 'email', // Must match grouped connection config
         ),
       )
     );
@@ -246,7 +250,7 @@ import 'package:web3dart/web3dart.dart';
 
 Future<void> getWalletInfo() async {
   // Get private key from Web3Auth
-  final privateKey = await Web3AuthFlutter.getPrivKey();
+  final privateKey = await Web3AuthFlutter.getPrivateKey();
   
   // Create credentials
   final credentials = EthPrivateKey.fromHex(privateKey);

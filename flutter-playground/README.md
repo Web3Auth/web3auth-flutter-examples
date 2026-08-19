@@ -32,6 +32,10 @@ A comprehensive playground application demonstrating all advanced features of Me
 - **Modal Customization**: Position, size, and behavior settings
 - **Loading Screens**: Custom loading indicators
 
+## What's new in v7
+
+This example uses `web3auth_flutter ^7.0.0` with `chains` wired into `Web3AuthOptions`, plus `showWalletUI()`, `request()`, `enableMFA()`, and `manageMFA()`. See the [root README](../README.md#whats-new-in-v7) for the full rename table.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -91,18 +95,18 @@ import 'package:web3auth_flutter/web3auth_flutter.dart';
 import 'dart:io';
 
 Future<void> initWeb3Auth() async {
-  late final Uri redirectUrl;
+  String redirectUrl;
   
   if (Platform.isAndroid) {
-    redirectUrl = Uri.parse('w3a://com.example.playground/auth');
+    redirectUrl = 'w3a://com.example.playground/auth';
   } else if (Platform.isIOS) {
-    redirectUrl = Uri.parse('com.example.playground://auth');
+    redirectUrl = 'com.example.playground://auth';
   }
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
       clientId: "YOUR_WEB3AUTH_CLIENT_ID",
-      network: Network.sapphire_mainnet,
+      web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
       redirectUrl: redirectUrl,
       // Advanced whitelabel configuration
       whiteLabel: WhiteLabelData(
@@ -151,7 +155,7 @@ flutter build apk  # For Android
 await Web3AuthFlutter.init(
   Web3AuthOptions(
     clientId: "YOUR_CLIENT_ID",
-    network: Network.sapphire_mainnet,
+    web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
     redirectUrl: redirectUrl,
     whiteLabel: WhiteLabelData(
       appName: "My Crypto App",
@@ -176,9 +180,9 @@ await Web3AuthFlutter.init(
 ```dart
 // Enable MFA during login
 Future<void> loginWithMFA() async {
-  final response = await Web3AuthFlutter.login(
+  final response = await Web3AuthFlutter.connectTo(
     LoginParams(
-      loginProvider: Provider.google,
+      authConnection: AuthConnection.google,
       mfaLevel: MFALevel.MANDATORY, // NONE, OPTIONAL, MANDATORY, DEFAULT
     )
   );
@@ -204,38 +208,28 @@ Future<bool> isMFAEnabled() async {
 ### 3. Wallet Services UI
 
 ```dart
-// Launch wallet services (transaction confirmation, wallet management)
-Future<void> launchWalletServices() async {
+// Launch wallet services (transaction confirmation, wallet management).
+// Chains are configured in Web3AuthOptions during init.
+Future<void> openWalletUI() async {
   try {
-    await Web3AuthFlutter.launchWalletServices(
-      ChainConfig(
-        chainNamespace: ChainNamespace.eip155,
-        chainId: "0x1", // Ethereum mainnet
-        rpcTarget: "https://rpc.ankr.com/eth",
-        displayName: "Ethereum",
-        blockExplorerUrl: "https://etherscan.io",
-        ticker: "ETH",
-        tickerName: "Ethereum",
-      ),
-    );
+    await Web3AuthFlutter.showWalletUI();
   } catch (e) {
     print('Wallet services error: $e');
   }
 }
 
-// Request transaction with UI
-Future<String> sendTransactionWithUI(String txData) async {
+// Request a signature with the wallet UI
+Future<String> personalSign(String message) async {
   final result = await Web3AuthFlutter.request(
-    ChainConfig(
-      chainNamespace: ChainNamespace.eip155,
-      chainId: "0x1",
-      rpcTarget: "https://rpc.ankr.com/eth",
-    ),
-    "eth_sendTransaction",
-    [txData],
+    "personal_sign",
+    [message, "0xYourAddress"],
   );
   return result;
 }
+
+// MFA management
+Future<void> setupMFA() async => Web3AuthFlutter.enableMFA();
+Future<void> manageMFA() async => Web3AuthFlutter.manageMFA();
 ```
 
 ### 4. DApp Share (Multi-Device Sessions)
@@ -243,9 +237,9 @@ Future<String> sendTransactionWithUI(String txData) async {
 ```dart
 // Login with dApp share enabled
 Future<void> loginWithDappShare() async {
-  final response = await Web3AuthFlutter.login(
+  final response = await Web3AuthFlutter.connectTo(
     LoginParams(
-      loginProvider: Provider.google,
+      authConnection: AuthConnection.google,
       dappShare: "YOUR_DAPP_SHARE", // Optional: pass previous share
     )
   );
@@ -262,7 +256,7 @@ Future<void> loginWithDappShare() async {
 // Check for existing session
 Future<bool> hasActiveSession() async {
   try {
-    final privateKey = await Web3AuthFlutter.getPrivKey();
+    final privateKey = await Web3AuthFlutter.getPrivateKey();
     return privateKey.isNotEmpty;
   } catch (e) {
     return false;
@@ -276,9 +270,9 @@ Future<void> getSessionInfo() async {
   print('Email: ${userInfo.email}');
   print('Name: ${userInfo.name}');
   print('Profile Image: ${userInfo.profileImage}');
-  print('Verifier: ${userInfo.verifier}');
-  print('Verifier ID: ${userInfo.verifierId}');
-  print('Type of Login: ${userInfo.typeOfLogin}');
+  print('Verifier: ${userInfo.authConnectionId}');
+  print('Verifier ID: ${userInfo.authConnectionIdId}');
+  print('Type of Login: ${userInfo.authConnection}');
   print('MFA Enabled: ${userInfo.isMfaEnabled}');
 }
 
@@ -294,49 +288,37 @@ Future<void> logout() async {
 // Get private key for different chains
 Future<void> getKeysForDifferentChains() async {
   // EVM chains (Ethereum, Polygon, BSC, etc.)
-  final evmPrivateKey = await Web3AuthFlutter.getPrivKey();
-  
+  final evmPrivateKey = await Web3AuthFlutter.getPrivateKey();
+
   // Solana
-  final solanaPrivateKey = await Web3AuthFlutter.getED25519PrivKey();
+  final solanaPrivateKey = await Web3AuthFlutter.getEd25519PrivateKey();
 }
 
-// Configure chain
-ChainConfig getChainConfig(String chainName) {
-  switch (chainName) {
-    case 'ethereum':
-      return ChainConfig(
+// Pass chains at init time — see lib/core/utils/chain_configs.dart
+await Web3AuthFlutter.init(
+  Web3AuthOptions(
+    clientId: "YOUR_CLIENT_ID",
+    web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
+    redirectUrl: redirectUrl,
+    chains: [
+      Chains(
         chainNamespace: ChainNamespace.eip155,
         chainId: "0x1",
         rpcTarget: "https://rpc.ankr.com/eth",
         displayName: "Ethereum Mainnet",
-        blockExplorerUrl: "https://etherscan.io",
         ticker: "ETH",
-        tickerName: "Ethereum",
-      );
-    case 'polygon':
-      return ChainConfig(
-        chainNamespace: ChainNamespace.eip155,
-        chainId: "0x89",
-        rpcTarget: "https://rpc.ankr.com/polygon",
-        displayName: "Polygon Mainnet",
-        blockExplorerUrl: "https://polygonscan.com",
-        ticker: "MATIC",
-        tickerName: "Polygon",
-      );
-    case 'solana':
-      return ChainConfig(
+      ),
+      Chains(
         chainNamespace: ChainNamespace.solana,
         chainId: "0x1",
         rpcTarget: "https://api.mainnet-beta.solana.com",
         displayName: "Solana Mainnet",
-        blockExplorerUrl: "https://explorer.solana.com",
         ticker: "SOL",
-        tickerName: "Solana",
-      );
-    default:
-      throw Exception('Unsupported chain');
-  }
-}
+      ),
+    ],
+    defaultChainId: "0x1",
+  ),
+);
 ```
 
 ### 7. Server-Side Verification
@@ -358,12 +340,12 @@ Future<String> getIdToken() async {
 
 ```dart
 Future<void> loginWithCustomJWT(String jwtToken) async {
-  final response = await Web3AuthFlutter.login(
+  final response = await Web3AuthFlutter.connectTo(
     LoginParams(
-      loginProvider: Provider.jwt,
+      authConnection: AuthConnection.custom,
       extraLoginOptions: ExtraLoginOptions(
         id_token: jwtToken,
-        verifierIdField: 'sub', // or email, depending on your JWT
+        userIdField: 'sub', // or email, depending on your JWT
         domain: 'your-domain.com',
       ),
     )

@@ -16,6 +16,10 @@ This example demonstrates how to integrate MetaMask Embedded Wallets with Fireba
 - **Cross-Platform**: Single codebase for iOS and Android
 - **Persistent Sessions**: Firebase + Web3Auth session management
 
+## What's new in v7
+
+This example uses `web3auth_flutter ^7.0.0` with chains in `Web3AuthOptions`, `showWalletUI()`, `manageMFA()`, and a labelled SFA sign-in path. See the [root README](../README.md#whats-new-in-v7) for the full rename table.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -114,18 +118,18 @@ Future<void> main() async {
 }
 
 Future<void> initWeb3Auth() async {
-  late final Uri redirectUrl;
+  String redirectUrl;
   
   if (Platform.isAndroid) {
-    redirectUrl = Uri.parse('w3a://com.example.firebaseapp/auth');
+    redirectUrl = 'w3a://com.example.firebaseapp/auth';
   } else if (Platform.isIOS) {
-    redirectUrl = Uri.parse('com.example.firebaseapp://auth');
+    redirectUrl = 'com.example.firebaseapp://auth';
   }
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
       clientId: "YOUR_WEB3AUTH_CLIENT_ID",
-      network: Network.sapphire_mainnet,
+      web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
       redirectUrl: redirectUrl,
     )
   );
@@ -216,12 +220,12 @@ Future<void> loginWithFirebase() async {
     if (idToken == null) return;
     
     // Step 3: Login to Web3Auth with Firebase JWT
-    final Web3AuthResponse response = await Web3AuthFlutter.login(
+    final Web3AuthResponse response = await Web3AuthFlutter.connectTo(
       LoginParams(
-        loginProvider: Provider.jwt,
+        authConnection: AuthConnection.custom,
         extraLoginOptions: ExtraLoginOptions(
           id_token: idToken,
-          verifierIdField: 'sub', // or 'email' based on your setup
+          userIdField: 'sub', // or 'email' based on your setup
           domain: 'firebase', // optional
         ),
       )
@@ -236,37 +240,12 @@ Future<void> loginWithFirebase() async {
 }
 ```
 
-#### 3. Alternative: Email/Password Login
+#### 3. Anonymous Firebase Login (used by this example)
 
 ```dart
-Future<void> loginWithEmailPassword(String email, String password) async {
-  try {
-    // Step 1: Sign in with Firebase
-    final UserCredential userCredential = 
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-    
-    // Step 2: Get ID token
-    final User? user = userCredential.user;
-    final String? idToken = await user?.getIdToken();
-    
-    if (idToken == null) return;
-    
-    // Step 3: Login to Web3Auth
-    await Web3AuthFlutter.login(
-      LoginParams(
-        loginProvider: Provider.jwt,
-        extraLoginOptions: ExtraLoginOptions(
-          id_token: idToken,
-          verifierIdField: 'sub',
-        ),
-      )
-    );
-  } catch (e) {
-    print('Login error: $e');
-  }
+Future<String> getFirebaseIdToken() async {
+  final credential = await FirebaseAuth.instance.signInAnonymously();
+  return await credential.user?.getIdToken(true) ?? '';
 }
 ```
 
@@ -290,7 +269,7 @@ import 'package:web3dart/web3dart.dart';
 
 Future<void> getWalletInfo() async {
   // Get private key from Web3Auth
-  final privateKey = await Web3AuthFlutter.getPrivKey();
+  final privateKey = await Web3AuthFlutter.getPrivateKey();
   
   // Create credentials
   final credentials = EthPrivateKey.fromHex(privateKey);
@@ -342,14 +321,14 @@ Future<void> getWalletInfo() async {
 - Verify JWT Verifier configuration in Web3Auth dashboard
 - Check that `iss` field validation matches: `https://securetoken.google.com/YOUR_PROJECT_ID`
 - Ensure JWKS endpoint is correct
-- Verify `verifierIdField` matches token structure (`sub` or `email`)
+- Verify `userIdField` matches token structure (`sub` or `email`)
 - Check that ID token is fresh (call `getIdToken()` right before Web3Auth login)
 
 **Problem**: Different wallet address on each login
 
 **Solutions**:
 - Ensure you're using the same verifier name each time
-- Verify `verifierIdField` is consistent
+- Verify `userIdField` is consistent
 - Check that Client ID hasn't changed
 - Ensure network (devnet/mainnet) is consistent
 

@@ -14,7 +14,7 @@ dependencies:
   http: ^1.2.0
   provider: ^6.1.2
   solana: ^0.31.0
-  web3auth_flutter: ^6.1.1
+  web3auth_flutter: ^7.0.0
   web3dart: ^2.7.2
 
 dev_dependencies:
@@ -23,6 +23,8 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
 flutter:
+  config:
+    enable-swift-package-manager: false
   uses-material-design: true
 
   assets:

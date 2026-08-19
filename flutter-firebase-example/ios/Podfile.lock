@@ -1,4 +1,7 @@
 PODS:
+  - AnalyticsSwiftCocoapod (1.8.0):
+    - JSONSafeEncoding (= 2.0.0)
+    - Sovran (= 1.1.1)
   - BigInt (5.2.0)
   - curvelib.swift (2.0.0)
   - Firebase/Auth (11.4.0):
@@ -13,7 +16,7 @@ PODS:
   - firebase_core (3.8.1):
     - Firebase/CoreOnly (= 11.4.0)
     - Flutter
-  - FirebaseAppCheckInterop (11.6.0)
+  - FirebaseAppCheckInterop (11.15.0)
   - FirebaseAuth (11.4.0):
     - FirebaseAppCheckInterop (~> 11.0)
     - FirebaseAuthInterop (~> 11.0)
@@ -23,54 +26,65 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GTMSessionFetcher/Core (< 5.0, >= 3.4)
     - RecaptchaInterop (~> 100.0)
-  - FirebaseAuthInterop (11.6.0)
+  - FirebaseAuthInterop (11.15.0)
   - FirebaseCore (11.4.0):
     - FirebaseCoreInternal (~> 11.0)
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/Logger (~> 8.0)
   - FirebaseCoreExtension (11.4.1):
     - FirebaseCore (~> 11.0)
-  - FirebaseCoreInternal (11.6.0):
-    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+  - FirebaseCoreInternal (11.15.0):
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
   - Flutter (1.0.0)
-  - GoogleUtilities/AppDelegateSwizzler (8.0.2):
+  - GoogleUtilities/AppDelegateSwizzler (8.1.2):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
     - GoogleUtilities/Network
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Environment (8.0.2):
+  - GoogleUtilities/Environment (8.1.2):
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Logger (8.0.2):
+  - GoogleUtilities/Logger (8.1.2):
     - GoogleUtilities/Environment
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Network (8.0.2):
+  - GoogleUtilities/Network (8.1.2):
     - GoogleUtilities/Logger
     - "GoogleUtilities/NSData+zlib"
     - GoogleUtilities/Privacy
     - GoogleUtilities/Reachability
-  - "GoogleUtilities/NSData+zlib (8.0.2)":
+  - "GoogleUtilities/NSData+zlib (8.1.2)":
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Privacy (8.0.2)
-  - GoogleUtilities/Reachability (8.0.2):
+  - GoogleUtilities/Privacy (8.1.2)
+  - GoogleUtilities/Reachability (8.1.2):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - GTMSessionFetcher/Core (4.1.0)
+  - GTMSessionFetcher/Core (4.5.0)
+  - JSONSafeEncoding (2.0.0)
+  - JWTDecode (3.3.0)
   - KeychainSwift (20.0.0)
   - RecaptchaInterop (100.0.0)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - TorusSessionManager (6.0.2):
+  - Sovran (1.1.1)
+  - Torus-fetchNodeDetails (8.0.1):
+    - BigInt (~> 5.2.0)
+  - Torus-utils (10.0.1):
+    - curvelib.swift (~> 2.0.0)
+    - Torus-fetchNodeDetails (~> 8.0.1)
+  - TorusSessionManager (6.1.0):
     - curvelib.swift (~> 2.0.0)
     - KeychainSwift (~> 20.0.0)
-  - Web3Auth (11.0.4):
+  - Web3Auth (12.0.1):
+    - AnalyticsSwiftCocoapod (~> 1.8.0)
     - BigInt (~> 5.2.0)
     - curvelib.swift (~> 2.0.0)
+    - JWTDecode (~> 3.3.0)
     - KeychainSwift (~> 20.0.0)
-    - TorusSessionManager (~> 6.0.2)
+    - Torus-utils (~> 10.0.1)
+    - TorusSessionManager (~> 6.1.0)
   - web3auth_flutter (2.0.1):
     - Flutter
-    - Web3Auth (~> 11.0.3)
+    - Web3Auth (~> 12.0.1)
 
 DEPENDENCIES:
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
@@ -81,6 +95,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - AnalyticsSwiftCocoapod
     - BigInt
     - curvelib.swift
     - Firebase
@@ -92,8 +107,13 @@ SPEC REPOS:
     - FirebaseCoreInternal
     - GoogleUtilities
     - GTMSessionFetcher
+    - JSONSafeEncoding
+    - JWTDecode
     - KeychainSwift
     - RecaptchaInterop
+    - Sovran
+    - Torus-fetchNodeDetails
+    - Torus-utils
     - TorusSessionManager
     - Web3Auth
 
@@ -110,26 +130,32 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/web3auth_flutter/ios"
 
 SPEC CHECKSUMS:
+  AnalyticsSwiftCocoapod: cc3e4d4e381a080c89a6f5f56845577c298bc627
   BigInt: f668a80089607f521586bbe29513d708491ef2f7
   curvelib.swift: b9223e5cac801effed8a5fe8968e952b3fe427a5
   Firebase: cf1b19f21410b029b6786a54e9764a0cacad3c99
   firebase_auth: c4bdd9d7b338ac004008cb5024a643584e0ec03f
   firebase_core: 418aed674e9a0b8b6088aec16cde82a811f6261f
-  FirebaseAppCheckInterop: 347aa09a805219a31249b58fc956888e9fcb314b
+  FirebaseAppCheckInterop: 06fe5a3799278ae4667e6c432edd86b1030fa3df
   FirebaseAuth: c359af98bd703cbf4293eec107a40de08ede6ce6
-  FirebaseAuthInterop: a919d415797d23b7bfe195a04f322b86c65020ef
+  FirebaseAuthInterop: 7087d7a4ee4bc4de019b2d0c240974ed5d89e2fd
   FirebaseCore: e0510f1523bc0eb21653cac00792e1e2bd6f1771
   FirebaseCoreExtension: f1bc67a4702931a7caa097d8e4ac0a1b0d16720e
-  FirebaseCoreInternal: d98ab91e2d80a56d7b246856a8885443b302c0c2
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
-  GTMSessionFetcher: 923b710231ad3d6f3f0495ac1ced35421e07d9a6
+  FirebaseCoreInternal: 9afa45b1159304c963da48addb78275ef701c6b4
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  GoogleUtilities: 766ace00c6b10d8148408f329d10c4f051931850
+  GTMSessionFetcher: fc75fc972958dceedee61cb662ae1da7a83a91cf
+  JSONSafeEncoding: 54722ebc4fe1482e3e60a8450e1287481e32dd8b
+  JWTDecode: 1ca6f765844457d0dd8690436860fecee788f631
   KeychainSwift: 0ce6a4d13f7228054d1a71bb1b500448fb2ab837
   RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
-  TorusSessionManager: 3c47c2a4c4d6173a10006eb0af4b86317ee45ff8
-  Web3Auth: da6064a0a164f23be456040621eef777d5742230
-  web3auth_flutter: db7c73157a5773bd9b6b795886e24f15e44b0c6a
+  Sovran: f8212bb3855042a24689a73ea0219ca5295235da
+  Torus-fetchNodeDetails: 0ae97719263ee98f5bf5549a86464eea38a828f3
+  Torus-utils: 7c53a9c71663c2f458bfdcf1a380d7a5b88f9632
+  TorusSessionManager: cd2de693425cefb976c7bca42a45964297d8c2cc
+  Web3Auth: 5459b2d5bcdb150c5e84c7229639422cba684814
+  web3auth_flutter: 679bf381b59e725390e03cc28980c02245025862
 
 PODFILE CHECKSUM: 775997f741c536251164e3eacf6e34abf2eb7a17
 

@@ -14,6 +14,15 @@ This example demonstrates how to integrate MetaMask Embedded Wallets (formerly W
 - **Cross-Platform**: Single codebase for iOS and Android
 - **Material Design UI**: Clean, modern interface components
 
+## What's new in v7
+
+This example uses `web3auth_flutter ^7.0.0`. See the [root README](../README.md#whats-new-in-v7) for the full v6 → v7 rename table. Key changes in this example:
+
+- `redirectUrl` is a `String` (no `Uri.parse`)
+- `Web3AuthFlutter.connectTo()` replaces `login()`
+- `getPrivateKey()` replaces `getPrivKey()`
+- Google and email passwordless use `AuthConnection`
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -74,22 +83,23 @@ import 'package:web3auth_flutter/enums.dart';
 import 'dart:io';
 
 Future<void> initWeb3Auth() async {
-  late final Uri redirectUrl;
-  
+  String redirectUrl;
   if (Platform.isAndroid) {
-    redirectUrl = Uri.parse('w3a://com.example.w3aflutter/auth');
+    redirectUrl = 'w3a://com.example.w3aflutter';
   } else if (Platform.isIOS) {
-    redirectUrl = Uri.parse('com.example.w3aflutter://auth');
+    redirectUrl = 'com.example.w3aflutter://auth';
+  } else {
+    throw UnKnownException('Unknown platform');
   }
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
       clientId: "YOUR_WEB3AUTH_CLIENT_ID", // Get from dashboard
-      network: Network.sapphire_mainnet, // or Network.sapphire_devnet
+      web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet, // or sapphire_devnet
       redirectUrl: redirectUrl,
-    )
+    ),
   );
-  
+
   await Web3AuthFlutter.initialize();
 }
 ```
@@ -216,18 +226,18 @@ lib/
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 Future<void> initWeb3Auth() async {
-  late final Uri redirectUrl;
+  String redirectUrl;
   
   if (Platform.isAndroid) {
-    redirectUrl = Uri.parse('w3a://com.example.w3aflutter/auth');
+    redirectUrl = 'w3a://com.example.w3aflutter/auth';
   } else if (Platform.isIOS) {
-    redirectUrl = Uri.parse('com.example.w3aflutter://auth');
+    redirectUrl = 'com.example.w3aflutter://auth';
   }
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
       clientId: "YOUR_CLIENT_ID",
-      network: Network.sapphire_mainnet,
+      web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
       redirectUrl: redirectUrl,
     )
   );
@@ -243,15 +253,14 @@ Future<void> initWeb3Auth() async {
 // Login with Google
 Future<void> login() async {
   try {
-    final Web3AuthResponse response = await Web3AuthFlutter.login(
+    final Web3AuthResponse response = await Web3AuthFlutter.connectTo(
       LoginParams(
-        loginProvider: Provider.google,
+        authConnection: AuthConnection.google,
         mfaLevel: MFALevel.NONE,
-      )
+      ),
     );
-    
-    // User is now logged in
-    final userInfo = response.userInfo;
+
+    final UserInfo? userInfo = response.userInfo;
     print('User email: ${userInfo?.email}');
   } catch (e) {
     print('Login error: $e');
@@ -266,7 +275,7 @@ Future<void> logout() async {
 // Check existing session
 Future<void> checkSession() async {
   try {
-    final privateKey = await Web3AuthFlutter.getPrivKey();
+    final privateKey = await Web3AuthFlutter.getPrivateKey();
     if (privateKey.isNotEmpty) {
       // User has an active session
     }
@@ -283,7 +292,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:http/http.dart';
 
 // Get private key
-final privateKey = await Web3AuthFlutter.getPrivKey();
+final privateKey = await Web3AuthFlutter.getPrivateKey();
 
 // Create credentials
 final credentials = EthPrivateKey.fromHex(privateKey);
@@ -371,7 +380,7 @@ await Web3AuthFlutter.initialize(); // This checks for existing session
 
 // Check for active session
 try {
-  final privateKey = await Web3AuthFlutter.getPrivKey();
+  final privateKey = await Web3AuthFlutter.getPrivateKey();
   if (privateKey.isNotEmpty) {
     // Session exists
   }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_playground/core/service_locator.dart';
+import 'package:flutter_playground/core/widgets/custom_dialog.dart';
 import 'package:flutter_playground/core/utils/strings.dart';
 import 'package:flutter_playground/features/home/domain/entities/account.dart';
 import 'package:flutter_playground/features/home/domain/repositories/chain_config_repostiory.dart';
@@ -14,6 +15,7 @@ import 'package:flutter_playground/features/home/presentation/widgets/chain_swit
 import 'package:flutter_playground/features/home/presentation/widgets/home_header.dart';
 import 'package:flutter_playground/features/login/presentation/screens/login_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:web3auth_flutter/input.dart';
 import 'package:web3auth_flutter/output.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 
@@ -26,7 +28,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final ChainConfigRepository chainConfigRepository;
-  late final TorusUserInfo userInfo;
+  late final UserInfo userInfo;
 
   late final StreamController<Account> streamController;
   late Stream<Account> stream;
@@ -170,6 +172,38 @@ class _HomeScreenState extends State<HomeScreen> {
                                 chainId: chain.chainId,
                               );
                             }),
+                            const SizedBox(height: 24),
+                            const Divider(),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Wallet Services',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                OutlinedButton(
+                                  onPressed: _launchWalletUI,
+                                  child: const Text('Show Wallet UI'),
+                                ),
+                                OutlinedButton(
+                                  onPressed: () => _signMessage(
+                                    snapshot.requireData.publicAddress,
+                                  ),
+                                  child: const Text('Sign Message'),
+                                ),
+                                OutlinedButton(
+                                  onPressed: _enableMFA,
+                                  child: const Text('Enable MFA'),
+                                ),
+                                OutlinedButton(
+                                  onPressed: _manageMFA,
+                                  child: const Text('Manage MFA'),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -185,6 +219,61 @@ class _HomeScreenState extends State<HomeScreen> {
             return const Center(child: CircularProgressIndicator.adaptive());
           }),
     );
+  }
+
+  Future<void> _launchWalletUI() async {
+    try {
+      await Web3AuthFlutter.showWalletUI();
+    } catch (e) {
+      if (mounted) {
+        showInfoDialog(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> _signMessage(String address) async {
+    try {
+      final signResponse = await Web3AuthFlutter.request(
+        "personal_sign",
+        [
+          "Hello, Web3Auth from Flutter Playground!",
+          address,
+        ],
+      );
+      if (mounted) {
+        showInfoDialog(context, signResponse.toString());
+      }
+    } catch (e) {
+      if (mounted) {
+        showInfoDialog(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> _enableMFA() async {
+    try {
+      await Web3AuthFlutter.enableMFA();
+      if (mounted) {
+        showInfoDialog(context, 'MFA setup flow launched.');
+      }
+    } catch (e) {
+      if (mounted) {
+        showInfoDialog(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> _manageMFA() async {
+    try {
+      final result = await Web3AuthFlutter.manageMFA();
+      if (mounted) {
+        showInfoDialog(context, 'Manage MFA result: $result');
+      }
+    } catch (e) {
+      if (mounted) {
+        showInfoDialog(context, e.toString());
+      }
+    }
   }
 
   // Helper function to navigate to different screens.

@@ -17,6 +17,10 @@ This example demonstrates how to integrate MetaMask Embedded Wallets with Auth0 
 - **Cross-Platform**: Single codebase for iOS and Android
 - **Enterprise-Ready**: Auth0's enterprise features (SSO, MFA, etc.)
 
+## What's new in v7
+
+This example uses `web3auth_flutter ^7.0.0` with `authConnectionConfig` and `AuthConnection.custom` for Auth0 JWT login. See the [root README](../README.md#whats-new-in-v7) for the full rename table.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -119,18 +123,18 @@ Update Web3Auth configuration in `lib/main.dart`:
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 Future<void> initWeb3Auth() async {
-  late final Uri redirectUrl;
+  String redirectUrl;
   
   if (Platform.isAndroid) {
-    redirectUrl = Uri.parse('w3a://com.example.auth0app/auth');
+    redirectUrl = 'w3a://com.example.auth0app/auth';
   } else if (Platform.isIOS) {
-    redirectUrl = Uri.parse('com.example.auth0app://auth');
+    redirectUrl = 'com.example.auth0app://auth';
   }
 
   await Web3AuthFlutter.init(
     Web3AuthOptions(
       clientId: "YOUR_WEB3AUTH_CLIENT_ID",
-      network: Network.sapphire_mainnet,
+      web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
       redirectUrl: redirectUrl,
     )
   );
@@ -204,12 +208,12 @@ Future<void> loginWithAuth0() async {
     final idToken = credentials.idToken;
     
     // Step 3: Login to Web3Auth with Auth0 JWT
-    final Web3AuthResponse response = await Web3AuthFlutter.login(
+    final Web3AuthResponse response = await Web3AuthFlutter.connectTo(
       LoginParams(
-        loginProvider: Provider.jwt,
+        authConnection: AuthConnection.custom,
         extraLoginOptions: ExtraLoginOptions(
           id_token: idToken,
-          verifierIdField: 'sub',
+          userIdField: 'sub',
           domain: Auth0Config.domain,
         ),
       )
@@ -240,12 +244,12 @@ Future<void> loginWithGoogle() async {
     
     final idToken = credentials.idToken;
     
-    await Web3AuthFlutter.login(
+    await Web3AuthFlutter.connectTo(
       LoginParams(
-        loginProvider: Provider.jwt,
+        authConnection: AuthConnection.custom,
         extraLoginOptions: ExtraLoginOptions(
           id_token: idToken,
-          verifierIdField: 'sub',
+          userIdField: 'sub',
         ),
       )
     );
@@ -274,7 +278,7 @@ import 'package:web3dart/web3dart.dart';
 
 Future<void> getWalletInfo() async {
   // Get private key from Web3Auth
-  final privateKey = await Web3AuthFlutter.getPrivKey();
+  final privateKey = await Web3AuthFlutter.getPrivateKey();
   
   // Create credentials
   final credentials = EthPrivateKey.fromHex(privateKey);
@@ -327,14 +331,14 @@ Future<void> getWalletInfo() async {
 - Verify Custom Verifier configuration in Web3Auth dashboard
 - Check that Auth0 domain and client ID match exactly
 - Ensure JWKS endpoint is accessible
-- Verify `verifierIdField` is set to `sub`
+- Verify `userIdField` is set to `sub`
 - Check that ID token is valid and not expired
 
 **Problem**: Different wallet address on each login
 
 **Solutions**:
 - Ensure you're using the same verifier name each time
-- Verify `verifierIdField` is consistent (`sub`)
+- Verify `userIdField` is consistent (`sub`)
 - Check that Client ID hasn't changed
 - Ensure network (devnet/mainnet) is consistent
 

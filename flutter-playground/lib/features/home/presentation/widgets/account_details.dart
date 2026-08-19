@@ -10,7 +10,7 @@ import 'package:flutter_playground/features/home/domain/entities/account.dart';
 import 'package:web3auth_flutter/output.dart';
 
 class AccountDetails extends StatelessWidget {
-  final TorusUserInfo userInfo;
+  final UserInfo userInfo;
   final Account account;
 
   const AccountDetails({

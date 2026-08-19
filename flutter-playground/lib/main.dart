@@ -20,16 +20,20 @@ void main() async {
   // Set up ServiceLoactor used for dependency injection.
   ServiceLocator.setUp();
 
+  final web3AuthChains = buildWeb3AuthChains();
+
   // Initialize the Web3AuthFlutter instance.
   await Web3AuthFlutter.init(
     Web3AuthOptions(
       clientId: StringConstants.web3AuthClientId,
-      network: Network.sapphire_mainnet,
+      web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
       redirectUrl: resolveRedirectUrl(),
       whiteLabel: WhiteLabelData(
         appName: StringConstants.appName,
         mode: ThemeModes.dark,
       ),
+      chains: web3AuthChains,
+      defaultChainId: web3AuthChains.first.chainId,
     ),
   );
 
@@ -63,7 +67,7 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
-    privateKeyFuture = Web3AuthFlutter.getPrivKey();
+    privateKeyFuture = Web3AuthFlutter.getPrivateKey();
   }
 
   @override

@@ -20,7 +20,7 @@ This repository contains comprehensive Flutter examples demonstrating the integr
 
 ### Plug and Play (PnP) SDK Examples
 
-These examples use the latest MetaMask Embedded Wallets SDK (`web3auth_flutter ^6.1.2`):
+These examples use the latest MetaMask Embedded Wallets SDK (`web3auth_flutter ^7.0.0`):
 
 | Example | Description | Features |
 |---------|-------------|----------|
@@ -29,7 +29,32 @@ These examples use the latest MetaMask Embedded Wallets SDK (`web3auth_flutter ^
 | [**flutter-auth0-example**](./flutter-auth0-example) | Custom auth with Auth0 | Auth0 integration, OAuth 2.0 |
 | [**flutter-aggregate-verifier-example**](./flutter-aggregate-verifier-example) | Grouped connections | Same wallet across multiple providers |
 | [**flutter-solana-example**](./flutter-solana-example) | Solana blockchain integration | Solana wallet, SPL tokens |
-| [**flutter-playground**](./flutter-playground) | Advanced features showcase | MFA, whitelabel, wallet services |
+| [**flutter-playground**](./flutter-playground) | Advanced features showcase | MFA, wallet services, multi-chain |
+
+## What's new in v7
+
+All examples target `web3auth_flutter ^7.0.0` (Android SDK v10 / iOS SDK v12). Key renames from v6:
+
+| v6 | v7 |
+|----|-----|
+| `Network` | `Web3AuthNetwork` |
+| `network:` | `web3AuthNetwork:` |
+| `Provider` / `TypeOfLogin` | `AuthConnection` |
+| `Provider.jwt` | `AuthConnection.custom` |
+| `Web3AuthFlutter.login()` | `Web3AuthFlutter.connectTo()` |
+| `loginProvider:` | `authConnection:` |
+| `redirectUrl: Uri` | `redirectUrl: String` |
+| `loginConfig` | `authConnectionConfig` |
+| `verifier` | `authConnectionId` |
+| `verifierSubIdentifier` | `groupedAuthConnectionId` |
+| `verifierIdField` | `userIdField` |
+| `getPrivKey()` | `getPrivateKey()` |
+| `getEd25519PrivKey()` | `getEd25519PrivateKey()` |
+| `TorusUserInfo` | `UserInfo` |
+| `response.privKey` | `response.privateKey` |
+| `launchWalletServices(ChainConfig)` | `showWalletUI()` |
+| `request(ChainConfig, ...)` | `request(method, params)` |
+| SDK `ChainConfig` | `Web3AuthOptions(chains: [Chains(...)])` |
 
 ## 🚀 Quick Start
 

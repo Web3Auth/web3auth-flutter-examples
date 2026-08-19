@@ -76,12 +76,13 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
             ),
             verticalGap,
             OutlinedButton(
-              onPressed: () => _login(context, Provider.email_passwordless),
+              onPressed: () =>
+                  _login(context, AuthConnection.email_passwordless),
               child: const Text("Login with Email passwordless"),
             ),
             verticalGap,
             OutlinedButton(
-              onPressed: () => _login(context, Provider.google),
+              onPressed: () => _login(context, AuthConnection.google),
               child: const Text("Login with Google"),
             )
           ],
@@ -92,11 +93,11 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
   Future<void> _login(
     BuildContext context,
-    Provider loginProvider,
+    AuthConnection authConnection,
   ) async {
     try {
       final bool isEmailPasswordLessLogin =
-          loginProvider == Provider.email_passwordless;
+          authConnection == AuthConnection.email_passwordless;
 
       if (isEmailPasswordLessLogin) {
         if (!formKey.currentState!.validate()) {
@@ -106,9 +107,9 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
       final userEmail = textEditingController.text;
 
-      await Web3AuthFlutter.login(
+      await Web3AuthFlutter.connectTo(
         LoginParams(
-          loginProvider: loginProvider,
+          authConnection: authConnection,
           mfaLevel: MFALevel.DEFAULT,
           extraLoginOptions: isEmailPasswordLessLogin
               ? ExtraLoginOptions(login_hint: userEmail)

@@ -68,7 +68,7 @@ class EthereumProvider extends ChainProvider {
   // scep2561k curve. You can use the Web3AuthFlutter.getPrivKey
   // to retrieve the scep2561K compatible private key.
   Future<Credentials> _prepareCredentials() async {
-    final privateKey = await Web3AuthFlutter.getPrivKey();
+    final privateKey = await Web3AuthFlutter.getPrivateKey();
     final Credentials credentials = EthPrivateKey.fromHex(privateKey);
     return credentials;
   }

@@ -8,6 +8,7 @@ import 'package:flutter_solana_example/core/solana/solana_provider.dart';
 import 'package:flutter_solana_example/core/widgets/custom_dialog.dart';
 import 'package:flutter_solana_example/login_screen.dart';
 import 'package:solana/solana.dart';
+import 'package:web3auth_flutter/output.dart';
 import 'package:web3auth_flutter/web3auth_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late final Ed25519HDKeyPair keyPair;
   late final SolanaProvider provider;
   late double balance;
-  late final dynamic web3AuthInfo;
+  late final UserInfo web3AuthInfo;
 
   @override
   void initState() {
@@ -34,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> loadAccount(BuildContext context) async {
     try {
-      final privateKey = await Web3AuthFlutter.getEd25519PrivKey();
+      final privateKey = await Web3AuthFlutter.getEd25519PrivateKey();
 
       // getUserInfo method can be used to fetch the user information
       // such as email, name, isMFA enabled. Checkout documentation
@@ -146,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   OutlinedButton(
                     onPressed: () async {
                       final privateKey =
-                          await Web3AuthFlutter.getEd25519PrivKey();
+                          await Web3AuthFlutter.getEd25519PrivateKey();
                       if (context.mounted) {
                         copyContentToClipboard(context, privateKey);
                       }

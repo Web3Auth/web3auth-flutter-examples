@@ -53,7 +53,7 @@ class SolanaProvider extends ChainProvider {
   }
 
   Future<Ed25519HDKeyPair> _generateKeyPair() async {
-    final privateKey = await Web3AuthFlutter.getEd25519PrivKey();
+    final privateKey = await Web3AuthFlutter.getEd25519PrivateKey();
     return await Ed25519HDKeyPair.fromPrivateKeyBytes(
       privateKey: privateKey.hexToBytes.take(32).toList(),
     );
