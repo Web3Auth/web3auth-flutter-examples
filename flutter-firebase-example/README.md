@@ -18,7 +18,7 @@ This example demonstrates how to integrate MetaMask Embedded Wallets with Fireba
 
 ## What's new in v7
 
-This example uses `web3auth_flutter ^7.0.0` with chains in `Web3AuthOptions`, `showWalletUI()`, `manageMFA()`, and a labelled SFA sign-in path. See the [root README](../README.md#whats-new-in-v7) for the full rename table.
+This example uses `web3auth_flutter ^7.0.0` with chains in `Web3AuthOptions`, `showWalletUI()`, `manageMFA()`, and SFA JWT sign-in via `LoginParams.idToken`. See the [root README](../README.md#whats-new-in-v7) for the full rename table.
 
 ## 🚀 Getting Started
 
@@ -219,16 +219,13 @@ Future<void> loginWithFirebase() async {
     final String? idToken = await user.getIdToken();
     if (idToken == null) return;
     
-    // Step 3: Login to Web3Auth with Firebase JWT
+    // Step 3: Login to Web3Auth with Firebase JWT (SFA)
     final Web3AuthResponse response = await Web3AuthFlutter.connectTo(
       LoginParams(
         authConnection: AuthConnection.custom,
-        extraLoginOptions: ExtraLoginOptions(
-          id_token: idToken,
-          userIdField: 'sub', // or 'email' based on your setup
-          domain: 'firebase', // optional
-        ),
-      )
+        authConnectionId: "w3a-firebase-demo",
+        idToken: idToken,
+      ),
     );
     
     print('Web3Auth login successful!');

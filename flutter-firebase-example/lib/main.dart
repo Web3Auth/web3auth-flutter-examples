@@ -190,14 +190,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                               const Color.fromARGB(255, 245, 130, 13),
                           foregroundColor: Colors.white,
                         ),
-                        onPressed: _login(_withJWT),
-                        child: const Text('Login with JWT via Firebase (PnP)'),
-                      ),
-                      ElevatedButton(
-                        onPressed: _login(_withSFA),
-                        child: const Text(
-                          'SFA Sign-In (different wallet address)',
-                        ),
+                        onPressed: _login(_loginWithFirebase),
+                        child: const Text('Login with Firebase'),
                       ),
                     ],
                   ),
@@ -321,10 +315,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       loginParams = LoginParams(
         authConnection: AuthConnection.custom,
         authConnectionId: "w3a-firebase-demo",
-        extraLoginOptions: ExtraLoginOptions(
-          id_token: idToken,
-          domain: 'firebase',
-        ),
+        idToken: idToken,
       );
       await Web3AuthFlutter.enableMFA(loginParams: loginParams!);
     } catch (e) {
@@ -366,33 +357,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  Future<Web3AuthResponse> _withJWT() async {
+  Future<Web3AuthResponse> _loginWithFirebase() async {
     final idToken = await _getFirebaseIdToken();
 
     loginParams = LoginParams(
       authConnection: AuthConnection.custom,
       authConnectionId: "w3a-firebase-demo",
-      extraLoginOptions: ExtraLoginOptions(
-        id_token: idToken,
-        domain: 'firebase',
-      ),
+      idToken: idToken,
     );
 
     return Web3AuthFlutter.connectTo(loginParams!);
-  }
-
-  /// SFA sign-in passes idToken directly on LoginParams (not extraLoginOptions).
-  /// This uses a different key derivation path and produces a different address.
-  Future<Web3AuthResponse> _withSFA() async {
-    final idToken = await _getFirebaseIdToken();
-
-    return Web3AuthFlutter.connectTo(
-      LoginParams(
-        authConnection: AuthConnection.custom,
-        authConnectionId: "w3a-firebase-demo",
-        idToken: idToken,
-      ),
-    );
   }
 
   Future<String> _getAddress() async {
