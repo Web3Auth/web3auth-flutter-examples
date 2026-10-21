@@ -14,13 +14,13 @@ This example demonstrates how to integrate MetaMask Embedded Wallets (formerly W
 - **Cross-Platform**: Single codebase for iOS and Android
 - **Material Design UI**: Clean, modern interface components
 
-## What's new in v7
+## What's new in v8
 
-This example uses `web3auth_flutter ^7.0.0`. See the [root README](../README.md#whats-new-in-v7) for the full v6 → v7 rename table. Key changes in this example:
+This example uses `web3auth_flutter ^8.0.0`. See the [root README](../README.md#whats-new-in-v8).
 
-- `redirectUrl` is a `String` (no `Uri.parse`)
-- `Web3AuthFlutter.connectTo()` replaces `login()`
-- `getPrivateKey()` replaces `getPrivKey()`
+- iOS 15, native Web3Auth from Swift Package Manager
+- `sessionTime` comes from the dashboard (not set in code)
+- Post-login actions include `getAccessToken()`, `refreshSession()`, and `request("personal_sign", ...)`
 - Google and email passwordless use `AuthConnection`
 
 ## 🚀 Getting Started
@@ -30,7 +30,7 @@ This example uses `web3auth_flutter ^7.0.0`. See the [root README](../README.md#
 - **Flutter**: 3.0.0 or higher
 - **Dart**: 2.18.0 or higher
 - **iOS** (for iOS development):
-  - iOS 14+
+  - iOS 15+
   - Xcode 12+
   - CocoaPods
   - Swift 5.x

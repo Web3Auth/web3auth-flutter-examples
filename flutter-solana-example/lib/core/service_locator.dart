@@ -10,7 +10,7 @@ class ServiceLocator {
   static Future<void> init() async {
     final solanaClient = SolanaClient(
       rpcUrl: Uri.parse('https://api.devnet.solana.com'),
-      websocketUrl: Uri.parse('ws://api.devnet.solana.com'),
+      websocketUrl: Uri.parse('wss://api.devnet.solana.com'),
     );
 
     getIt.registerLazySingleton<SolanaClient>(() => solanaClient);

@@ -15,9 +15,12 @@ This example demonstrates how to use **Grouped Connections** (formerly Aggregate
 - **Secure Key Management**: Non-custodial key management with consistent identity
 - **Cross-Platform**: Single codebase for iOS and Android
 
-## What's new in v7
+## What's new in v8
 
-This example uses `web3auth_flutter ^7.0.0` with grouped connections (`authConnectionId` + `groupedAuthConnectionId`). See the [root README](../README.md#whats-new-in-v7) for the full rename table.
+This example uses `web3auth_flutter ^8.0.0` with grouped connections (`authConnectionId` + `groupedAuthConnectionId`). See the [root README](../README.md#whats-new-in-v8).
+
+- iOS 15, native Web3Auth from Swift Package Manager
+- `sessionTime` comes from the dashboard
 
 ## 🔑 What are Grouped Connections?
 
@@ -38,7 +41,7 @@ Grouped Connections link multiple authentication methods together so users get t
 - **MetaMask Embedded Wallets**: [Dashboard account](https://dashboard.web3auth.io)
 - **Auth0 Account** (optional, for custom provider): [Create one here](https://auth0.com)
 - **iOS** (for iOS development):
-  - iOS 14+, Xcode 12+, Swift 5.x, CocoaPods
+  - iOS 15+, Xcode 15+, Swift 5.x, CocoaPods (other plugins) + Swift Package Manager (Web3Auth)
 - **Android** (for Android development):
   - API level 26+, compileSdkVersion 34, JDK 11+
 

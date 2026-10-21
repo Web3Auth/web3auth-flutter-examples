@@ -110,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
       await Web3AuthFlutter.connectTo(
         LoginParams(
           authConnection: authConnection,
-          mfaLevel: MFALevel.DEFAULT,
+          mfaLevel: MFALevel.OPTIONAL,
           extraLoginOptions: isEmailPasswordLessLogin
               ? ExtraLoginOptions(login_hint: userEmail)
               : null,

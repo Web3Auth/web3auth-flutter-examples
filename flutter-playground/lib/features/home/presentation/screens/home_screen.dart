@@ -195,6 +195,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: const Text('Sign Message'),
                                 ),
                                 OutlinedButton(
+                                  onPressed: _getAccessToken,
+                                  child: const Text('Get Access Token'),
+                                ),
+                                OutlinedButton(
+                                  onPressed: _refreshSession,
+                                  child: const Text('Refresh Session'),
+                                ),
+                                OutlinedButton(
                                   onPressed: _enableMFA,
                                   child: const Text('Enable MFA'),
                                 ),
@@ -242,6 +250,32 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       if (mounted) {
         showInfoDialog(context, signResponse.toString());
+      }
+    } catch (e) {
+      if (mounted) {
+        showInfoDialog(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> _getAccessToken() async {
+    try {
+      final String token = await Web3AuthFlutter.getAccessToken();
+      if (mounted) {
+        showInfoDialog(context, token);
+      }
+    } catch (e) {
+      if (mounted) {
+        showInfoDialog(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> _refreshSession() async {
+    try {
+      final Web3AuthResponse response = await Web3AuthFlutter.refreshSession();
+      if (mounted) {
+        showInfoDialog(context, response.toString());
       }
     } catch (e) {
       if (mounted) {

@@ -32,9 +32,13 @@ A comprehensive playground application demonstrating all advanced features of Me
 - **Modal Customization**: Position, size, and behavior settings
 - **Loading Screens**: Custom loading indicators
 
-## What's new in v7
+## What's new in v8
 
-This example uses `web3auth_flutter ^7.0.0` with `chains` wired into `Web3AuthOptions`, plus `showWalletUI()`, `request()`, `enableMFA()`, and `manageMFA()`. See the [root README](../README.md#whats-new-in-v7) for the full rename table.
+This example uses `web3auth_flutter ^8.0.0` with `chains` in `Web3AuthOptions`, plus `showWalletUI()`, `request()`, `enableMFA()`, `manageMFA()`, `getAccessToken()`, and `refreshSession()`. See the [root README](../README.md#whats-new-in-v8).
+
+- iOS 15, native Web3Auth from Swift Package Manager
+- `sessionTime` comes from the dashboard
+- Email passwordless login uses `MFALevel.OPTIONAL` (`MFALevel.DEFAULT` was removed)
 
 ## 🚀 Getting Started
 
@@ -44,7 +48,7 @@ This example uses `web3auth_flutter ^7.0.0` with `chains` wired into `Web3AuthOp
 - **Dart**: 2.18.0 or higher
 - **MetaMask Embedded Wallets**: [Dashboard account](https://dashboard.web3auth.io)
 - **iOS** (for iOS development):
-  - iOS 14+, Xcode 12+, Swift 5.x, CocoaPods
+  - iOS 15+, Xcode 15+, Swift 5.x, CocoaPods (other plugins) + Swift Package Manager (Web3Auth)
 - **Android** (for Android development):
   - API level 26+, compileSdkVersion 34, JDK 11+
 
@@ -120,8 +124,7 @@ Future<void> initWeb3Auth() async {
           'onPrimary': '#FFFFFF',
         },
       ),
-      // Session management
-      sessionTime: 86400, // 24 hours in seconds
+      // sessionTime is read from the dashboard when unset
       // MFA settings
       mfaSettings: MfaSettings(
         deviceShareFactor: MfaLevel.OPTIONAL,
@@ -388,7 +391,6 @@ Available languages:
 - `MFALevel.NONE` - No MFA
 - `MFALevel.OPTIONAL` - User can choose to enable MFA
 - `MFALevel.MANDATORY` - MFA required for all users
-- `MFALevel.DEFAULT` - Follow dashboard settings (shows MFA screen every 3rd login)
 
 ## 🔒 Security Features
 

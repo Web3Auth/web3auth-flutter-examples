@@ -76,9 +76,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       web3AuthNetwork: Web3AuthNetwork.sapphire_mainnet,
       redirectUrl: redirectUrl,
       authBuildEnv: BuildEnv.production,
-      // 259200 allows user to stay authenticated for 3 days with Web3Auth.
-      // Default is 86400, which is 1 day.
-      sessionTime: 259200,
     ));
 
     try {
@@ -210,6 +207,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                         child: const Text('Get Balance'),
                       ),
                       ElevatedButton(
+                        onPressed: _getAccessToken,
+                        child: const Text('Get Access Token'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _refreshSession,
+                        child: const Text('Refresh Session'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _signMessage,
+                        child: const Text('Sign Message'),
+                      ),
+                      ElevatedButton(
                         onPressed: _sendTransaction,
                         child: const Text('Send Transaction'),
                       ),
@@ -320,6 +329,62 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       _result = address.hexEip55.toString();
     });
     return address.hexEip55;
+  }
+
+  Future<void> _getAccessToken() async {
+    try {
+      final String token = await Web3AuthFlutter.getAccessToken();
+      setState(() {
+        _result = token;
+      });
+    } catch (e) {
+      log(e.toString());
+      setState(() {
+        _result = e.toString();
+      });
+    }
+  }
+
+  Future<void> _refreshSession() async {
+    try {
+      final Web3AuthResponse response = await Web3AuthFlutter.refreshSession();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('privateKey', response.privateKey?.toString() ?? '');
+      setState(() {
+        _result = response.toString();
+      });
+    } catch (e) {
+      log(e.toString());
+      setState(() {
+        _result = e.toString();
+      });
+    }
+  }
+
+  Future<void> _signMessage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final privateKey = prefs.getString('privateKey') ?? '';
+      final credentials = EthPrivateKey.fromHex(privateKey);
+      final address = credentials.address;
+      final signResponse = await Web3AuthFlutter.request(
+        "personal_sign",
+        [
+          "Hello, Web3Auth from Flutter!",
+          address.hexEip55,
+          "Web3Auth",
+        ],
+        appState: "web3auth",
+      );
+      setState(() {
+        _result = signResponse.toString();
+      });
+    } catch (e) {
+      log(e.toString());
+      setState(() {
+        _result = e.toString();
+      });
+    }
   }
 
   Future<EtherAmount> _getBalance() async {

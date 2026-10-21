@@ -17,9 +17,13 @@ This example demonstrates how to integrate MetaMask Embedded Wallets with Solana
 - **Cross-Platform**: Single codebase for iOS and Android
 - **Devnet & Mainnet**: Easily switch between Solana networks
 
-## What's new in v7
+## What's new in v8
 
-This example uses `web3auth_flutter ^7.0.0` with explicit Solana chain config in `Web3AuthOptions` and `getEd25519PrivateKey()`. See the [root README](../README.md#whats-new-in-v7) for the full rename table.
+This example uses `web3auth_flutter ^8.0.0` with explicit Solana chain config in `Web3AuthOptions` and `getEd25519PrivateKey()`. See the [root README](../README.md#whats-new-in-v8).
+
+- iOS 15, native Web3Auth from Swift Package Manager
+- `sessionTime` comes from the dashboard
+- Email passwordless login uses `MFALevel.OPTIONAL` (`MFALevel.DEFAULT` was removed)
 
 ## 🚀 Getting Started
 
@@ -30,7 +34,7 @@ This example uses `web3auth_flutter ^7.0.0` with explicit Solana chain config in
 - **MetaMask Embedded Wallets**: [Dashboard account](https://dashboard.web3auth.io)
 - **Solana Knowledge**: Basic understanding of Solana blockchain
 - **iOS** (for iOS development):
-  - iOS 14+, Xcode 12+, Swift 5.x, CocoaPods
+  - iOS 15+, Xcode 15+, Swift 5.x, CocoaPods (other plugins) + Swift Package Manager (Web3Auth)
 - **Android** (for Android development):
   - API level 26+, compileSdkVersion 34, JDK 11+
 

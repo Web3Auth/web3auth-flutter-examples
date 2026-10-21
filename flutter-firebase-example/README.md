@@ -16,9 +16,14 @@ This example demonstrates how to integrate MetaMask Embedded Wallets with Fireba
 - **Cross-Platform**: Single codebase for iOS and Android
 - **Persistent Sessions**: Firebase + Web3Auth session management
 
-## What's new in v7
+## What's new in v8
 
-This example uses `web3auth_flutter ^7.0.0` with chains in `Web3AuthOptions`, `showWalletUI()`, `manageMFA()`, and SFA JWT sign-in via `LoginParams.idToken`. See the [root README](../README.md#whats-new-in-v7) for the full rename table.
+This example uses `web3auth_flutter ^8.0.0` (`firebase_core ^4.14.0`, `firebase_auth ^6.7.0`). See the [root README](../README.md#whats-new-in-v8).
+
+- iOS 15, native Web3Auth from Swift Package Manager
+- `sessionTime` comes from the dashboard
+- Login is Firebase anonymous auth, then SFA: `LoginParams(authConnection: AuthConnection.custom, authConnectionId: "w3a-firebase-demo", idToken: idToken, extraLoginOptions: ExtraLoginOptions(userIdField: "sub"))`
+- `enableMFA()` and `manageMFA()` take no arguments
 
 ## 🚀 Getting Started
 
@@ -29,7 +34,7 @@ This example uses `web3auth_flutter ^7.0.0` with chains in `Web3AuthOptions`, `s
 - **Firebase Account**: [Create one here](https://firebase.google.com)
 - **MetaMask Embedded Wallets**: [Dashboard account](https://dashboard.web3auth.io)
 - **iOS** (for iOS development):
-  - iOS 14+, Xcode 12+, Swift 5.x, CocoaPods
+  - iOS 15+, Xcode 15+, Swift 5.x, CocoaPods (other plugins) + Swift Package Manager (Web3Auth)
 - **Android** (for Android development):
   - API level 26+, compileSdkVersion 34, JDK 11+
 
@@ -188,78 +193,37 @@ Future<void> main() async {
 
 #### 2. Implement Firebase + Web3Auth Login
 
-```dart
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-
-Future<void> loginWithFirebase() async {
-  try {
-    // Step 1: Authenticate with Firebase (Google example)
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-    
-    if (googleUser == null) return; // User canceled
-    
-    final GoogleSignInAuthentication googleAuth = 
-        await googleUser.authentication;
-    
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-    
-    // Sign in to Firebase
-    final UserCredential userCredential = 
-        await FirebaseAuth.instance.signInWithCredential(credential);
-    
-    // Step 2: Get Firebase ID Token
-    final User? user = userCredential.user;
-    if (user == null) return;
-    
-    final String? idToken = await user.getIdToken();
-    if (idToken == null) return;
-    
-    // Step 3: Login to Web3Auth with Firebase JWT (SFA)
-    final Web3AuthResponse response = await Web3AuthFlutter.connectTo(
-      LoginParams(
-        authConnection: AuthConnection.custom,
-        authConnectionId: "w3a-firebase-demo",
-        idToken: idToken,
-      ),
-    );
-    
-    print('Web3Auth login successful!');
-    print('User: ${response.userInfo?.email}');
-    
-  } catch (e) {
-    print('Login error: $e');
-  }
-}
-```
-
-#### 3. Anonymous Firebase Login (used by this example)
+This example signs in anonymously with Firebase, then passes the ID token to Web3Auth (SFA).
 
 ```dart
 Future<String> getFirebaseIdToken() async {
   final credential = await FirebaseAuth.instance.signInAnonymously();
   return await credential.user?.getIdToken(true) ?? '';
 }
-```
 
-#### 4. Logout
-
-```dart
-Future<void> logout() async {
-  // Logout from Web3Auth
-  await Web3AuthFlutter.logout();
-  
-  // Logout from Firebase
-  await FirebaseAuth.instance.signOut();
-  await GoogleSignIn().signOut();
+Future<Web3AuthResponse> loginWithFirebase() async {
+  final idToken = await getFirebaseIdToken();
+  return Web3AuthFlutter.connectTo(
+    LoginParams(
+      authConnection: AuthConnection.custom,
+      authConnectionId: "w3a-firebase-demo",
+      idToken: idToken,
+      extraLoginOptions: ExtraLoginOptions(userIdField: "sub"),
+    ),
+  );
 }
 ```
 
-#### 5. Get Blockchain Credentials
+#### 3. Logout
+
+```dart
+Future<void> logout() async {
+  await Web3AuthFlutter.logout();
+  await FirebaseAuth.instance.signOut();
+}
+```
+
+#### 4. Get Blockchain Credentials
 
 ```dart
 import 'package:web3dart/web3dart.dart';

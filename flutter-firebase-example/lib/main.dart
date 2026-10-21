@@ -32,7 +32,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   String _result = '';
   bool logoutVisible = false;
-  String rpcUrl = 'https://eth.llamarpc.com';
+  String rpcUrl = 'https://ethereum.publicnode.com';
   LoginParams? loginParams;
 
   @override
@@ -111,9 +111,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           ),
         ],
         defaultChainId: "0x1",
-        // 259200 allows user to stay authenticated for 3 days with Web3Auth.
-        // Default is 86400, which is 1 day.
-        sessionTime: 259200,
       ),
     );
 
@@ -285,6 +282,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         log("User cancelled.");
       } on UnKnownException {
         log("Unknown exception occurred");
+      } catch (e) {
+        log(e.toString());
+        setState(() {
+          _result = e.toString();
+        });
       }
     };
   }
@@ -308,52 +310,78 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   Future<void> _enableMFA() async {
     try {
-      final idToken = await FirebaseAuth.instance.currentUser?.getIdToken(true);
-      if (idToken == null) {
-        throw Exception('No user found');
-      }
-      loginParams = LoginParams(
-        authConnection: AuthConnection.custom,
-        authConnectionId: "w3a-firebase-demo",
-        idToken: idToken,
-      );
-      await Web3AuthFlutter.enableMFA(loginParams: loginParams!);
+      await Web3AuthFlutter.enableMFA();
+      setState(() {
+        _result = 'MFA enabled';
+      });
     } catch (e) {
       log(e.toString());
+      setState(() {
+        _result = e.toString();
+      });
     }
   }
 
   Future<void> _manageMFA() async {
     try {
-      await Web3AuthFlutter.manageMFA();
+      final bool result = await Web3AuthFlutter.manageMFA();
+      setState(() {
+        _result = 'Manage MFA: $result';
+      });
     } catch (e) {
       log(e.toString());
+      setState(() {
+        _result = e.toString();
+      });
     }
   }
 
   Future<void> _transactionConfirmationUI() async {
-    final result = await Web3AuthFlutter.request(
-      "personal_sign",
-      [
-        "Hello, World!",
-        await _getAddress(),
-      ],
-    );
-
-    log(result.toJson().toString());
+    try {
+      final result = await Web3AuthFlutter.request(
+        "personal_sign",
+        [
+          "Hello, World!",
+          await _getAddress(),
+        ],
+      );
+      log(result.toJson().toString());
+      setState(() {
+        _result = result.toString();
+      });
+    } catch (e) {
+      log(e.toString());
+      setState(() {
+        _result = e.toString();
+      });
+    }
   }
 
   Future<void> _launchWalletUI() async {
-    await Web3AuthFlutter.showWalletUI();
+    try {
+      await Web3AuthFlutter.showWalletUI();
+    } catch (e) {
+      log(e.toString());
+      setState(() {
+        _result = e.toString();
+      });
+    }
   }
 
   Future<String> _getFirebaseIdToken() async {
     try {
       final credential = await FirebaseAuth.instance.signInAnonymously();
-      return await credential.user?.getIdToken(true) ?? '';
+      final String? idToken = await credential.user?.getIdToken(true);
+      if (idToken == null || idToken.isEmpty) {
+        throw FirebaseAuthException(
+          code: 'missing-id-token',
+          message: 'Firebase did not return an ID token',
+        );
+      }
+      return idToken;
     } on FirebaseAuthException catch (e) {
       log('Firebase anonymous sign-in failed: ${e.code} ${e.message}');
-      return '';
+      rethrow;
     }
   }
 
@@ -364,6 +392,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       authConnection: AuthConnection.custom,
       authConnectionId: "w3a-firebase-demo",
       idToken: idToken,
+      extraLoginOptions: ExtraLoginOptions(userIdField: "sub"),
     );
 
     return Web3AuthFlutter.connectTo(loginParams!);
@@ -384,18 +413,26 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<EtherAmount> _getBalance() async {
-    final prefs = await SharedPreferences.getInstance();
-    final privateKey = prefs.getString('privateKey') ?? '0';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final privateKey = prefs.getString('privateKey') ?? '0';
 
-    final client = Web3Client(rpcUrl, Client());
-    final credentials = EthPrivateKey.fromHex(privateKey);
-    final address = credentials.address;
-    final balance = await client.getBalance(address);
-    log(balance.toString());
-    setState(() {
-      _result = balance.toString();
-    });
-    return balance;
+      final client = Web3Client(rpcUrl, Client());
+      final credentials = EthPrivateKey.fromHex(privateKey);
+      final address = credentials.address;
+      final balance = await client.getBalance(address);
+      log(balance.toString());
+      setState(() {
+        _result = balance.toString();
+      });
+      return balance;
+    } catch (e) {
+      log(e.toString());
+      setState(() {
+        _result = e.toString();
+      });
+      return EtherAmount.zero();
+    }
   }
 
   Future<String> _sendTransaction() async {

@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCL2uSXiGvQcfZ00IJ1g2uwC-7IcGZGVfQ',
-    appId: '1:461819774167:android:4b1a78bf91d324f95b9c92',
+    appId: '1:461819774167:android:bc6cf2871e083d7a5b9c92',
     messagingSenderId: '461819774167',
     projectId: 'web3auth-oauth-logins',
     storageBucket: 'web3auth-oauth-logins.appspot.com',
@@ -59,11 +59,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAttkINEO4AWRc2jJDHa5fPYp_1EtujcH0',
-    appId: '1:461819774167:ios:d78427e6826972075b9c92',
+    appId: '1:461819774167:ios:82239d4b9d6d6c725b9c92',
     messagingSenderId: '461819774167',
     projectId: 'web3auth-oauth-logins',
     storageBucket: 'web3auth-oauth-logins.appspot.com',
-    iosClientId: '461819774167-7fdovq6ssok0kjekc1orabg8dujp0iln.apps.googleusercontent.com',
-    iosBundleId: 'com.example.w3aflutter',
+    iosClientId: '461819774167-bpgggt9sa54debadqvir2vjf00r6g7m6.apps.googleusercontent.com',
+    iosBundleId: 'web3authrnbarefirebase',
   );
 }

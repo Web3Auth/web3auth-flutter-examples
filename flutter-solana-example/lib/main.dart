@@ -40,7 +40,6 @@ Future<void> main() async {
         ),
       ],
       defaultChainId: "0x3",
-      sessionTime: 40,
     ),
   );
 
@@ -60,12 +59,29 @@ class MainApp extends StatefulWidget {
   State<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends State<MainApp> {
+class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   late final Future<String> privateKeyFuture;
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     privateKeyFuture = Web3AuthFlutter.getEd25519PrivateKey();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  Future<bool> didPushRouteInformation(RouteInformation routeInformation) async {
+    // Passwordless login returns the session on this redirect. The native SDK
+    // reads it. Flutter would otherwise try to navigate to that URL and throw.
+    if (routeInformation.uri.toString().contains('b64Params')) {
+      return true;
+    }
+    return super.didPushRouteInformation(routeInformation);
   }
 
   @override

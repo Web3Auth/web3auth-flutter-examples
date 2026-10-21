@@ -20,7 +20,7 @@ This repository contains comprehensive Flutter examples demonstrating the integr
 
 ### Plug and Play (PnP) SDK Examples
 
-These examples use the latest MetaMask Embedded Wallets SDK (`web3auth_flutter ^7.0.0`):
+These examples use the latest MetaMask Embedded Wallets SDK (`web3auth_flutter ^8.0.0`):
 
 | Example | Description | Features |
 |---------|-------------|----------|
@@ -31,30 +31,17 @@ These examples use the latest MetaMask Embedded Wallets SDK (`web3auth_flutter ^
 | [**flutter-solana-example**](./flutter-solana-example) | Solana blockchain integration | Solana wallet, SPL tokens |
 | [**flutter-playground**](./flutter-playground) | Advanced features showcase | MFA, wallet services, multi-chain |
 
-## What's new in v7
+## What's new in v8
 
-All examples target `web3auth_flutter ^7.0.0` (Android SDK v10 / iOS SDK v12). Key renames from v6:
+All examples target `web3auth_flutter ^8.0.0` (Auth v11, Wallet Services v6, Android native 11.0.0, iOS native Web3Auth 13 via Swift Package Manager).
 
-| v6 | v7 |
-|----|-----|
-| `Network` | `Web3AuthNetwork` |
-| `network:` | `web3AuthNetwork:` |
-| `Provider` / `TypeOfLogin` | `AuthConnection` |
-| `Provider.jwt` | `AuthConnection.custom` |
-| `Web3AuthFlutter.login()` | `Web3AuthFlutter.connectTo()` |
-| `loginProvider:` | `authConnection:` |
-| `redirectUrl: Uri` | `redirectUrl: String` |
-| `loginConfig` | `authConnectionConfig` |
-| `verifier` | `authConnectionId` |
-| `verifierSubIdentifier` | `groupedAuthConnectionId` |
-| `verifierIdField` | `userIdField` |
-| `getPrivKey()` | `getPrivateKey()` |
-| `getEd25519PrivKey()` | `getEd25519PrivateKey()` |
-| `TorusUserInfo` | `UserInfo` |
-| `response.privKey` | `response.privateKey` |
-| `launchWalletServices(ChainConfig)` | `showWalletUI()` |
-| `request(ChainConfig, ...)` | `request(method, params)` |
-| SDK `ChainConfig` | `Web3AuthOptions(chains: [Chains(...)])` |
+- iOS deployment target is 15.0. Native Web3Auth is linked by the plugin's Swift package, not a CocoaPods `Web3Auth` pod.
+- `MFALevel.DEFAULT` is removed. Use `OPTIONAL`, `MANDATORY`, or `NONE`.
+- Leave `sessionTime` unset so the SDK reads it from the dashboard.
+- `enableMFA()` and `manageMFA()` take no arguments.
+- `init()` sets `sdkVersion` and Flutter analytics. Do not set them in app code.
+- Quick start and playground call `getAccessToken()` and `refreshSession()` after login.
+- Custom JWT (Firebase) stays on the SFA path: `LoginParams(authConnection: AuthConnection.custom, authConnectionId: ..., idToken: ...)`.
 
 ## 🚀 Quick Start
 
@@ -62,7 +49,7 @@ All examples target `web3auth_flutter ^7.0.0` (Android SDK v10 / iOS SDK v12). K
 
 - **Flutter** SDK 3.0.0 or higher
 - **Dart** 2.18.0 or higher
-- **iOS**: iOS 14+, Xcode 12+, Swift 5.x
+- **iOS**: iOS 15+, Xcode 15+, Swift 5.x (Swift Package Manager resolves native Web3Auth)
 - **Android**: API level 26+, compileSdkVersion 34
 - [MetaMask Embedded Wallets Dashboard](https://dashboard.web3auth.io) account
 

@@ -28,7 +28,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   String _result = '';
   bool logoutVisible = false;
-  String rpcUrl = 'https://1rpc.io/sepolia';
+  String rpcUrl = 'https://ethereum-sepolia-rpc.publicnode.com';
 
   @override
   void initState() {
@@ -49,6 +49,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       Web3AuthFlutter.setCustomTabsClosed();
     }
+  }
+
+  @override
+  Future<bool> didPushRouteInformation(RouteInformation routeInformation) async {
+    // Auth0 returns the session on this redirect. The native SDK reads it.
+    // Flutter would otherwise try to navigate to that URL and throw.
+    if (routeInformation.uri.toString().contains('b64Params')) {
+      return true;
+    }
+    return super.didPushRouteInformation(routeInformation);
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -92,9 +102,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           theme: themeMap,
         ),
         authConnectionConfig: authConnectionConfig,
-        // 259200 allows user to stay authenticated for 3 days with Web3Auth.
-        // Default is 86400, which is 1 day.
-        sessionTime: 259200,
       ),
     );
 
@@ -247,8 +254,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         });
       } on UserCancelledException {
         log("User cancelled.");
-      } on UnKnownException {
-        log("Unknown exception occurred");
+      } on UnKnownException catch (e) {
+        log(e.toString());
+        setState(() {
+          _result = e.toString();
+        });
+      } catch (e) {
+        log(e.toString());
+        setState(() {
+          _result = e.toString();
+        });
       }
     };
   }
@@ -302,12 +317,19 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final client = Web3Client(rpcUrl, Client());
     final credentials = EthPrivateKey.fromHex(privateKey);
     final address = credentials.address;
-    final balance = await client.getBalance(address);
-    log(balance.toString());
-    setState(() {
-      _result = balance.toString();
-    });
-    return balance;
+    try {
+      final balance = await client.getBalance(address);
+      log(balance.toString());
+      setState(() {
+        _result = balance.toString();
+      });
+      return balance;
+    } catch (e) {
+      setState(() {
+        _result = e.toString();
+      });
+      return EtherAmount.zero();
+    }
   }
 
   Future<String> _sendTransaction() async {
